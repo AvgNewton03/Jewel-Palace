@@ -22,7 +22,8 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Jewel Palace | Exquisite Imitation Jewellery",
-  description: "Discover our festive and vibrant collection of imitation jewellery. Shop wedding, heavy, and casual pieces.",
+  description:
+    "Discover our festive and vibrant collection of imitation jewellery. Shop wedding, heavy, and casual pieces.",
 };
 
 export default function RootLayout({
