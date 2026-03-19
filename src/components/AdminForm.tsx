@@ -33,13 +33,18 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
     formData.append('image', file);
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/products/add', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        },
-      });
+  const token = localStorage.getItem('token');
+
+  await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/products/add`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      },
+    }
+  );
 
       setMessage({ type: 'success', text: 'Product added successfully!' });
       
