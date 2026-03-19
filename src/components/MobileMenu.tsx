@@ -35,9 +35,10 @@ export default function MobileMenu() {
         <nav className="px-2 space-y-1">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Home</Link>
           <Link href="/collections" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">All Collections</Link>
+          <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Gallery</Link>
           <Link href="/collections?type=wedding" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Wedding</Link>
           <Link href="/collections?type=casual" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Casual</Link>
-          <Link href="/store" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Store / Contact</Link>
+          <Link href="/store" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Store</Link>
         </nav>
       </div>
     </div>

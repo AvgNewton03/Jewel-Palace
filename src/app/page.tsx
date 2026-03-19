@@ -1,16 +1,69 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import ProductCard from "@/components/ProductCard";
 import { ArrowRight, Star, Sparkles } from "lucide-react";
 
-const trendingProducts = [
-  { id: "1", title: "Kundan Polki Bridal Choker Set", price: 4299, originalPrice: 5999, occasion: "Wedding", isNew: true },
-  { id: "2", title: "Antique Gold Plated Jhumkas", price: 1150, occasion: "Heavy Festive" },
-  { id: "3", title: "American Diamond Delicate Necklace", price: 2450, originalPrice: 3200, occasion: "Casual" },
-  { id: "4", title: "Emerald Green Meenakari Bangle Set", price: 1899, occasion: "Wedding" },
-];
+// Types
+interface Product {
+  _id: string;
+  title: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  isVisible: boolean;
+  description?: string;
+}
+
+// Utility to add Cloudinary optimizations
+const optimizeImageUrl = (url: string) => {
+  if (!url) return "";
+  if (url.includes("cloudinary.com") && url.includes("/upload/")) {
+    if (url.includes("q_auto") || url.includes("f_auto")) return url;
+    return url.replace("/upload/", "/upload/q_auto,f_auto/");
+  }
+  return url;
+};
+
+// Skeleton Component
+const SkeletonCard = () => (
+  <div className="flex flex-col animate-pulse bg-white rounded-lg border border-gray-100 p-4">
+    <div className="w-full aspect-[4/5] bg-gray-200 rounded-md" />
+    <div className="mt-4 space-y-2">
+      <div className="h-4 bg-gray-200 w-3/4 rounded" />
+      <div className="h-4 bg-gray-200 w-1/4 rounded" />
+    </div>
+  </div>
+);
 
 export default function Home() {
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingProducts = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/products");
+        // Ensure only visible items are shown
+        const visibleProducts: Product[] = data.filter((p: Product) => p.isVisible !== false);
+        
+        // Take the latest 4 products as "trending"
+        // (Assuming DB natural order or _id order means newer are at the end, so reverse and take 4)
+        const latestFour = visibleProducts.reverse().slice(0, 4);
+        setTrendingProducts(latestFour);
+      } catch (error) {
+        console.error("Error fetching trending products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrendingProducts();
+  }, []);
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -92,13 +145,24 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {trendingProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-                imageUrl="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&q=80&w=600"
-              />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+            ) : trendingProducts.length > 0 ? (
+              trendingProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  id={product._id}
+                  title={product.title}
+                  price={product.price}
+                  imageUrl={optimizeImageUrl(product.imageUrl)}
+                  occasion={product.category}
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-lg border border-gray-100">
+                No trending products available.
+              </div>
+            )}
           </div>
           
           <div className="mt-10 text-center md:hidden">
@@ -136,7 +200,7 @@ export default function Home() {
                 <span className="text-xs uppercase tracking-wider text-brand-bg/70 mt-1">Unique Designs</span>
               </div>
             </div>
-            <Link href="/store" className="bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors self-start">
+            <Link href="/collections" className="bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors self-start">
               Visit Our Store
             </Link>
           </div>

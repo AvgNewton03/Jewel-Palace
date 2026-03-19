@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingBag, Eye, Heart } from 'lucide-react';
 import { useState } from 'react';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   id: string;
@@ -27,6 +28,7 @@ export default function ProductCard({
   isNew
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { addToCart } = useCart();
 
   return (
     <div 
@@ -69,7 +71,13 @@ export default function ProductCard({
         <div 
           className="absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 md:translate-y-full md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/60 to-transparent flex gap-2"
         >
-          <button className="flex-1 bg-white hover:bg-brand-gold text-gray-900 hover:text-white text-sm font-medium py-2.5 rounded transition-colors flex items-center justify-center gap-2">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              addToCart({ id, title, price, imageUrl });
+            }}
+            className="flex-1 bg-white hover:bg-brand-gold text-gray-900 hover:text-white text-sm font-medium py-2.5 rounded transition-colors flex items-center justify-center gap-2"
+          >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Add to Cart</span>
           </button>

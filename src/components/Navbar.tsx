@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { ShoppingBag, Search, Menu, User, X } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import { useCart } from '@/context/CartContext';
 
 export default function Navbar() {
   const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen } = useUI();
+  const { itemCount } = useCart();
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-brand-bg/90 backdrop-blur-md border-b border-brand-gold/20 shadow-sm transition-all duration-300">
@@ -35,9 +37,10 @@ export default function Navbar() {
           <div className="hidden lg:flex sm:space-x-8 items-center justify-center flex-1">
             <Link href="/" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Home</Link>
             <Link href="/collections" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Collections</Link>
+            <Link href="/gallery" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Gallery</Link>
             <Link href="/collections?type=wedding" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Wedding</Link>
             <Link href="/collections?type=casual" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Casual</Link>
-            <Link href="/store" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Store / Contact</Link>
+            <Link href="/store" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Store</Link>
           </div>
 
           {/* User & Cart Icons */}
@@ -56,7 +59,11 @@ export default function Navbar() {
             >
               <span className="sr-only">Cart</span>
               <ShoppingBag className="h-6 w-6" />
-              <span className="absolute top-1 right-1 bg-brand-maroon text-brand-bg text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">2</span>
+              {itemCount > 0 && (
+                <span className="absolute top-1 right-1 bg-brand-maroon text-brand-bg text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
