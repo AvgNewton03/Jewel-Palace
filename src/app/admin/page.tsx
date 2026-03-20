@@ -26,7 +26,8 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      const { data } = await axios.post('http://localhost:5000/api/admin/login', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const { data } = await axios.post(`${API_URL}/api/admin/login`, {
         username,
         password,
       });

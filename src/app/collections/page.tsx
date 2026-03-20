@@ -51,7 +51,8 @@ export default function CollectionsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/products");
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const { data } = await axios.get(`${API_URL}/api/products`);
         // Ensure only visible items are shown
         const visibleProducts = data.filter((p: Product) => p.isVisible !== false);
         setProducts(visibleProducts);

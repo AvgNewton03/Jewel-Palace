@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { ShoppingBag, Search, Menu, User, X } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen } = useUI();
   const { itemCount } = useCart();
+  const { user } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-brand-bg/90 backdrop-blur-md border-b border-brand-gold/20 shadow-sm transition-all duration-300">
@@ -49,9 +51,9 @@ export default function Navbar() {
               <span className="sr-only">Search</span>
               <Search className="h-5 w-5" />
             </Link>
-            <Link href="/store" className="text-gray-900 hover:text-brand-maroon transition-colors p-2 hidden sm:block">
+            <Link href={user ? "/account" : "/login"} className="text-gray-900 hover:text-brand-maroon transition-colors p-2 hidden sm:block">
               <span className="sr-only">Account</span>
-              <User className="h-5 w-5" />
+              <User className={`h-5 w-5 ${user ? "fill-brand-maroon text-brand-maroon" : ""}`} />
             </Link>
             <button 
               onClick={() => setIsCartOpen(true)}

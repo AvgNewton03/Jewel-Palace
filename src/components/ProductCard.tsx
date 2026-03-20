@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ShoppingBag, Eye, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   id: string;
@@ -29,6 +31,25 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { addToCart } = useCart();
+  const { user, addToWishlist, removeFromWishlist } = useAuth();
+  const router = useRouter();
+
+  // Check if this product is in the user's wishlist
+  const isWishlisted = user?.wishlist?.some((item: any) => 
+    (typeof item === 'string' ? item : item._id) === id
+  );
+
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      return router.push('/login');
+    }
+    if (isWishlisted) {
+      await removeFromWishlist(id);
+    } else {
+      await addToWishlist(id);
+    }
+  };
 
   return (
     <div 
@@ -63,8 +84,16 @@ export default function ProductCard({
         </div>
 
         {/* Wishlist Button */}
-        <button className="absolute top-3 right-3 text-gray-400 hover:text-brand-maroon transition-colors bg-white/80 backdrop-blur rounded-full p-2 shadow-sm" aria-label="Add to wishlist">
-          <Heart className="h-4 w-4" />
+        <button 
+          onClick={handleWishlistToggle}
+          className={`absolute top-3 right-3 transition-all backdrop-blur rounded-full p-2 shadow-sm ${
+            isWishlisted 
+              ? 'bg-brand-maroon text-white hover:bg-brand-maroon/90 shadow-brand-maroon/30' 
+              : 'bg-white/80 text-gray-400 hover:text-brand-maroon'
+          }`} 
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
         </button>
 
         {/* Quick Actions (Desktop Hover / Mobile Visible) */}

@@ -8,6 +8,7 @@ import CartDrawer from "@/components/CartDrawer";
 import MobileMenu from "@/components/MobileMenu";
 import { UIProvider } from "@/context/UIContext";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -37,16 +38,18 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${playfair.variable} antialiased min-h-screen flex flex-col relative`}
       >
-        <CartProvider>
-          <UIProvider>
-            <Navbar />
-            <MobileMenu />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <Footer />
-            <WhatsAppButton />
-            <CartDrawer />
-          </UIProvider>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <UIProvider>
+              <Navbar />
+              <MobileMenu />
+              <main className="flex-1 flex flex-col">{children}</main>
+              <Footer />
+              <WhatsAppButton />
+              <CartDrawer />
+            </UIProvider>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
