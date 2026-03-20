@@ -30,9 +30,9 @@ export default function StoreContactPage() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-1">Our Flagship Store</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    123 Market Street, <br />
-                    Jewellery Bazaar, Heritage Block,<br />
-                    City Center - 123456
+                    G-77, Moksh Plaza, Jambli Gali, 92, <br />
+                    Swami Vivekanand Rd, Borivali West,<br />
+                    Mumbai, Maharashtra 400092
                   </p>
                   <a href="#" className="inline-flex items-center gap-1 text-sm text-brand-maroon font-medium mt-2 hover:underline">
                     Get Directions <Navigation className="h-3 w-3" />

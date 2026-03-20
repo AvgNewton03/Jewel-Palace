@@ -16,7 +16,14 @@ interface Product {
   description?: string;
 }
 
-const CATEGORIES = ["All", "Necklaces", "Earrings", "Bracelets", "Rings", "Sets"];
+const CATEGORIES = [
+  "All",
+  "Necklaces",
+  "Earrings",
+  "Bracelets",
+  "Rings",
+  "Sets",
+];
 
 // Utility to add Cloudinary optimizations
 const optimizeImageUrl = (url: string) => {
@@ -47,15 +54,21 @@ export default function CustomerGallery() {
   // Filter & Search State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  
+
   const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/products");
-        // Ensure only visible items are shown in the gallery
-        const visibleProducts = data.filter((p: Product) => p.isVisible !== false);
+        // Use the environment variable with a fallback for local development
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+        const { data } = await axios.get(`${API_URL}/api/products`);
+
+        const visibleProducts = data.filter(
+          (p: Product) => p.isVisible !== false,
+        );
         setProducts(visibleProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -70,11 +83,13 @@ export default function CustomerGallery() {
   // Filter products by category and search query
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesCategory = selectedCategory === "All" || 
-        product.category === selectedCategory;
-      
-      const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+
+      const matchesSearch = product.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
       return matchesCategory && matchesSearch;
     });
   }, [products, searchQuery, selectedCategory]);
@@ -89,7 +104,7 @@ export default function CustomerGallery() {
   };
 
   const handleOrderWhatsApp = (product: Product) => {
-    const phoneNumber = "919876543210"; 
+    const phoneNumber = "919876543210";
     const message = `Hi, I am interested in ${product.title} - ${formatPrice(product.price)}.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
@@ -168,13 +183,13 @@ export default function CustomerGallery() {
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       loading="lazy"
                     />
-                    
+
                     {/* Hover Overlays (Desktop) */}
                     <div className="absolute inset-0 bg-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex flex-col items-center justify-center gap-4 backdrop-blur-[2px]">
                       <span className="bg-white text-gray-900 px-6 py-2 text-sm uppercase tracking-widest border border-gray-200 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 drop-shadow-sm hover:bg-gray-50">
                         View Details
                       </span>
-                      <button 
+                      <button
                         onClick={(e) => handleAddToCart(product, e)}
                         className="bg-brand-maroon text-white px-6 py-2 text-sm uppercase tracking-widest border border-brand-maroon transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75 shadow-lg hover:bg-brand-maroon/90 flex items-center gap-2"
                       >
@@ -197,9 +212,14 @@ export default function CustomerGallery() {
 
         {!loading && filteredProducts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-gray-500 font-light text-lg">No products found for "{searchQuery}" in {selectedCategory}.</p>
-            <button 
-              onClick={() => { setSearchQuery(""); setSelectedCategory("All"); }}
+            <p className="text-gray-500 font-light text-lg">
+              No products found for "{searchQuery}" in {selectedCategory}.
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("All");
+              }}
               className="mt-4 text-brand-maroon border-b border-brand-maroon pb-0.5 hover:text-brand-maroon/80 transition-colors"
             >
               Clear all filters
@@ -211,11 +231,11 @@ export default function CustomerGallery() {
       {/* Product Detail Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0"
             onClick={() => setSelectedProduct(null)}
           ></div>
-          
+
           <div className="relative bg-white w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row shadow-2xl animate-fade-in-up">
             <button
               onClick={() => setSelectedProduct(null)}
@@ -241,21 +261,21 @@ export default function CustomerGallery() {
               <span className="text-xs text-brand-maroon uppercase tracking-widest mb-4 block font-medium">
                 {selectedProduct.category || "Jewellery"}
               </span>
-              
+
               <h2 className="text-3xl md:text-4xl font-serif text-gray-900 mb-4 leading-tight">
                 {selectedProduct.title}
               </h2>
-              
+
               <p className="text-2xl text-gray-700 mb-8 font-light">
                 {formatPrice(selectedProduct.price)}
               </p>
-              
+
               <div className="h-px w-full bg-gray-100 mb-8"></div>
-              
+
               <div className="prose prose-sm text-gray-600 font-light mb-10 leading-relaxed">
                 <p>
-                  {selectedProduct.description || 
-                  "Experience the epitome of elegance with this beautifully crafted piece. Designed to add a touch of royal grandeur to your ensemble, it features intricate detailing and a flawless finish that shines in any light."}
+                  {selectedProduct.description ||
+                    "Experience the epitome of elegance with this beautifully crafted piece. Designed to add a touch of royal grandeur to your ensemble, it features intricate detailing and a flawless finish that shines in any light."}
                 </p>
               </div>
 
@@ -279,7 +299,7 @@ export default function CustomerGallery() {
                   Quick Inquiry on WhatsApp
                 </button>
               </div>
-              
+
               <p className="text-center text-xs text-gray-400 mt-6 uppercase tracking-widest">
                 Free shipping on all orders
               </p>
