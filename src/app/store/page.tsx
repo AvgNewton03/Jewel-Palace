@@ -85,6 +85,21 @@ export default function StoreContactPage() {
 
           </div>
         </div>
+
+        {/* Instagram & WhatsApp Blocks */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-16 w-full">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center p-10 bg-brand-maroon rounded-2xl text-white hover:scale-[1.02] transition-transform shadow-lg group border border-brand-gold/20">
+            <Camera className="h-10 w-10 mb-4 text-brand-gold group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 hidden sm:block" />
+            <h3 className="text-xl md:text-2xl font-serif text-brand-gold mb-2 text-center">Follow Us on Instagram</h3>
+            <p className="text-white/80 text-sm text-center font-light tracking-wide">See our latest designs and updates</p>
+          </a>
+          
+          <a href="https://wa.me/919029923215" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center p-10 bg-brand-bg rounded-2xl text-brand-maroon hover:scale-[1.02] transition-transform shadow-lg group border border-brand-maroon/20">
+            <MessageCircle className="h-10 w-10 mb-4 text-brand-maroon group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 hidden sm:block" />
+            <h3 className="text-xl md:text-2xl font-serif text-brand-maroon mb-2 text-center">Talk to Us on WhatsApp</h3>
+            <p className="text-gray-600 text-sm text-center font-light tracking-wide">Click to chat instantly with our team</p>
+          </a>
+        </div>
       </div>
     </div>
   );

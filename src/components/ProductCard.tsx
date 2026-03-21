@@ -77,7 +77,7 @@ export default function ProductCard({
             </span>
           )}
           {occasion && (
-            <span className="bg-brand-maroon/90 text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded">
+            <span className="bg-brand-maroon/90 text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded truncate max-w-[120px]">
               {occasion}
             </span>
           )}
@@ -110,15 +110,15 @@ export default function ProductCard({
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Add to Cart</span>
           </button>
-          <button className="bg-white/90 hover:bg-white text-gray-900 p-2.5 rounded transition-colors tooltip" aria-label="Quick View">
+          <Link href={`/product/${id}`} className="bg-white/90 hover:bg-white text-gray-900 p-2.5 rounded transition-colors tooltip flex items-center justify-center" aria-label="Quick View">
             <Eye className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">{occasion || 'Jewellery'}</p>
+        <p className="text-xs text-gray-500 uppercase tracking-widest mb-1 truncate max-w-full">{occasion || 'Jewellery'}</p>
         <Link href={`/product/${id}`} className="font-serif text-lg text-gray-900 hover:text-brand-maroon transition-colors line-clamp-2 leading-snug mb-2 font-medium">
           {title}
         </Link>

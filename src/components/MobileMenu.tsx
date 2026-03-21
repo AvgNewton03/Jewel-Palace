@@ -1,13 +1,17 @@
 "use client";
 
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { X, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useAuth } from '@/context/AuthContext';
 
 export default function MobileMenu() {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useUI();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) return null;
 
   if (!isMobileMenuOpen) return null;
 

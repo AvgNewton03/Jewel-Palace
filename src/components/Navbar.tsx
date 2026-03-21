@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, Menu, User, X } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useCart } from '@/context/CartContext';
@@ -10,6 +11,9 @@ export default function Navbar() {
   const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen } = useUI();
   const { itemCount } = useCart();
   const { user } = useAuth();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-brand-bg/90 backdrop-blur-md border-b border-brand-gold/20 shadow-sm transition-all duration-300">

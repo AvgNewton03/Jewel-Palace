@@ -156,7 +156,7 @@ export default function Home() {
                   title={product.title}
                   price={product.price}
                   imageUrl={optimizeImageUrl(product.imageUrl)}
-                  occasion={product.category}
+                  occasion={Array.isArray(product.category) && product.category.length > 0 ? product.category[0] : (product.category as string || "Jewellery")}
                 />
               ))
             ) : (

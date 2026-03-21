@@ -3,8 +3,11 @@
 import { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import { MessageCircle, ShoppingBag, Store, Heart, Share2, Tag, ShieldCheck, Truck, RotateCcw, Loader2 } from "lucide-react";
+import { MessageCircle, ShoppingBag, Store, Heart, Tag, ShieldCheck, Truck, RotateCcw, Loader2 } from "lucide-react";
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 interface MediaItem {
   url: string;
@@ -25,6 +28,10 @@ interface Product {
 
 export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
+  const { user, addToWishlist, removeFromWishlist } = useAuth();
+  const { addToCart } = useCart();
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -74,6 +81,35 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const occasionDisplay = product.occasion && product.occasion.length > 0 
     ? product.occasion[0] 
     : (product.category && product.category.length > 0 ? product.category[0] : "Jewellery");
+
+  const isWishlisted = user?.wishlist?.some((item: any) => 
+    (typeof item === 'string' ? item : item._id) === product?._id
+  );
+
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      return router.push('/login');
+    }
+    if (product) {
+      if (isWishlisted) {
+        await removeFromWishlist(product._id);
+      } else {
+        await addToWishlist(product._id);
+      }
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart({
+        id: product._id,
+        title: product.title,
+        price: product.price,
+        imageUrl: product.imageUrl
+      });
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen py-8 md:py-16">
@@ -154,11 +190,16 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                 {product.title}
               </h1>
               <div className="flex gap-2 shrink-0">
-                <button className="p-2 text-gray-400 hover:text-brand-maroon transition-colors bg-gray-50 rounded-full" aria-label="Share">
-                  <Share2 className="h-5 w-5" />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-brand-maroon transition-colors bg-gray-50 rounded-full" aria-label="Add to Wishlist">
-                  <Heart className="h-5 w-5" />
+                <button 
+                  onClick={handleWishlistToggle}
+                  className={`p-2 transition-all rounded-full ${
+                    isWishlisted 
+                      ? 'bg-brand-maroon text-white hover:bg-brand-maroon/90 shadow-md' 
+                      : 'bg-gray-50 text-gray-400 hover:text-brand-maroon'
+                  }`} 
+                  aria-label="Add to Wishlist"
+                >
+                  <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
                 </button>
               </div>
             </div>
@@ -183,14 +224,17 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
             {/* Actions */}
             <div className="space-y-4 mb-8">
-              <button className="w-full bg-foreground text-white font-medium text-lg py-4 rounded hover:bg-brand-maroon shadow-md transition-all flex justify-center items-center gap-2">
+              <button 
+                onClick={handleAddToCart}
+                className="w-full bg-foreground text-white font-medium text-lg py-4 rounded hover:bg-brand-maroon shadow-md transition-all flex justify-center items-center gap-2"
+              >
                 <ShoppingBag className="h-5 w-5" />
                 Add to Cart
               </button>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <a 
-                  href={`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id})`}
+                  href={`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`}
                   target="_blank" 
                   rel="noreferrer"
                   className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
@@ -198,10 +242,15 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                   <MessageCircle className="h-5 w-5" />
                   Order on WhatsApp
                 </a>
-                <button className="bg-brand-gold/10 text-brand-maroon border border-brand-gold/50 font-medium py-3.5 rounded hover:bg-brand-gold/20 transition-all flex justify-center items-center gap-2">
+                <a 
+                  href={`https://wa.me/919029923215?text=Hi! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`}
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="bg-brand-gold/10 text-brand-maroon border border-brand-gold/50 font-medium py-3.5 rounded hover:bg-brand-gold/20 transition-all flex justify-center items-center gap-2"
+                >
                   <Store className="h-5 w-5" />
                   Reserve & Pick
-                </button>
+                </a>
               </div>
             </div>
 
