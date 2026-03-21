@@ -61,7 +61,7 @@ export const loginUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('wishlist');
+    const user = await User.findById(req.user._id).populate("wishlist");
     if (user) {
       res.json({
         _id: user._id,
@@ -104,7 +104,7 @@ export const removeWishlist = async (req, res) => {
     const productId = req.params.id;
 
     if (user) {
-      user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
+      user.wishlist = user.wishlist.filter((id) => id.toString() !== productId);
       await user.save();
       res.json(user.wishlist);
     } else {
