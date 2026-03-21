@@ -2,6 +2,7 @@
 
 import { X, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useUI } from "@/context/UIContext";
 import { useCart } from "@/context/CartContext";
 
@@ -74,18 +75,28 @@ export default function CartDrawer() {
           ) : (
             cart.map((item) => (
               <div key={item.id} className="flex gap-4">
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-100 flex-shrink-0 bg-gray-50">
+                <Link 
+                  href={`/product/${item.id}`}
+                  onClick={() => setIsCartOpen(false)}
+                  className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-100 flex-shrink-0 bg-gray-50 block hover:opacity-80 transition-opacity"
+                >
                   <Image
                     fill
                     src={item.imageUrl}
                     alt={item.title}
                     className="object-cover"
                   />
-                </div>
+                </Link>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="font-medium text-gray-900 line-clamp-2 leading-snug pr-6 relative">
-                      {item.title}
+                      <Link 
+                        href={`/product/${item.id}`}
+                        onClick={() => setIsCartOpen(false)}
+                        className="hover:text-brand-maroon transition-colors"
+                      >
+                        {item.title}
+                      </Link>
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="absolute right-0 top-0 text-gray-400 hover:text-red-500 transition-colors"
