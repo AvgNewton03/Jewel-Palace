@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function MobileMenu() {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useUI();
+  const { user } = useAuth();
 
   if (!isMobileMenuOpen) return null;
 
@@ -39,6 +41,13 @@ export default function MobileMenu() {
           <Link href="/collections?type=wedding" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Wedding</Link>
           <Link href="/collections?type=casual" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Casual</Link>
           <Link href="/store" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Store</Link>
+          <div className="pt-4 mt-2 border-t border-gray-100">
+            {user ? (
+              <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">My Account</Link>
+            ) : (
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Sign In</Link>
+            )}
+          </div>
         </nav>
       </div>
     </div>

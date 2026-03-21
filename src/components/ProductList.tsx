@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import axios from "axios";
 import { Eye, EyeOff, Trash2, Edit } from "lucide-react";
 
@@ -104,17 +105,19 @@ export default function ProductList({ refreshKey }: { refreshKey: number }) {
           }`}
         >
           {/* Product Image */}
-          <div className="w-full sm:w-24 h-48 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 mb-4 sm:mb-0">
+          <Link href={`/product/${product._id}`} className="w-full sm:w-24 h-48 sm:h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 mb-4 sm:mb-0 hover:opacity-80 transition-opacity block focus:outline-none focus:ring-2 focus:ring-brand-maroon focus:ring-offset-2">
             <img
               src={product.imageUrl}
               alt={product.title}
               className="w-full h-full object-cover"
             />
-          </div>
+          </Link>
 
           {/* Product Info */}
           <div className="flex-grow sm:px-6 w-full text-center sm:text-left mb-4 sm:mb-0">
-            <h3 className="text-lg font-bold text-gray-900">{product.title}</h3>
+            <Link href={`/product/${product._id}`} className="hover:text-brand-maroon transition-colors block focus:outline-none focus:ring-2 focus:ring-brand-maroon focus:ring-offset-2 rounded-md">
+              <h3 className="text-lg font-bold text-gray-900">{product.title}</h3>
+            </Link>
             <div className="flex items-center justify-center sm:justify-start gap-3 mt-1">
               <span className="font-semibold text-gray-700">
                 ${product.price.toFixed(2)}

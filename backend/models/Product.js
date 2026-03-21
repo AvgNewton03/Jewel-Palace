@@ -13,6 +13,14 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  media: [{
+    url: String,
+    mediaType: {
+      type: String,
+      enum: ['image', 'video'],
+      default: 'image'
+    }
+  }],
   category: {
     type: [String],
     default: [],

@@ -10,14 +10,14 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   const [categories, setCategories] = useState<string[]>(['Necklaces']);
   const [occasions, setOccasions] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !file) {
-      setMessage({ type: 'error', text: 'Please provide all details including an image.' });
+    if (!title || !price || files.length === 0) {
+      setMessage({ type: 'error', text: 'Please provide all details including at least one media file.' });
       return;
     }
 
@@ -30,7 +30,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
     formData.append('category', JSON.stringify(categories));
     formData.append('occasion', JSON.stringify(occasions));
     formData.append('color', JSON.stringify(colors));
-    formData.append('image', file);
+    files.forEach(f => formData.append('media', f));
 
     try {
   const token = localStorage.getItem('token');
@@ -54,7 +54,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
       setCategories(['Necklaces']);
       setOccasions([]);
       setColors([]);
-      setFile(null);
+      setFiles([]);
       
       // Reset input type file
       const fileInput = document.getElementById('product-image') as HTMLInputElement;
@@ -185,18 +185,22 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div>
-          <label htmlFor="product-image" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Image
+          <label htmlFor="product-media" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Media (Images & Videos)
           </label>
           <input
-            id="product-image"
+            id="product-media"
             type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            multiple
+            accept="image/*,video/*"
+            onChange={(e) => setFiles(Array.from(e.target.files || []))}
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 transition-all focus:outline-none cursor-pointer"
             disabled={isLoading}
             required
           />
+          {files.length > 0 && (
+            <p className="mt-2 text-xs text-brand-maroon">{files.length} file(s) selected.</p>
+          )}
         </div>
 
         <button

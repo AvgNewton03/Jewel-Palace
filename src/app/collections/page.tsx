@@ -49,6 +49,20 @@ export default function CollectionsPage() {
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
 
   useEffect(() => {
+    // Safely parse URL without next/navigation Suspense requirements
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const typeQuery = params.get('type');
+      if (typeQuery) {
+        const typeCapitalized = typeQuery.charAt(0).toUpperCase() + typeQuery.slice(1);
+        if (['Wedding', 'Casual', 'Heavy Festive', 'Office Wear'].includes(typeCapitalized)) {
+          setSelectedOccasions([typeCapitalized]);
+        } else {
+          setSelectedTypes([typeCapitalized]);
+        }
+      }
+    }
+
     const fetchProducts = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";

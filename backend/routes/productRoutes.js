@@ -40,27 +40,49 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/products/:id - Get a single product
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
 // All routes require authentication
 router.use(protect);
 
 // POST route /api/products/add
-router.post("/add", upload.single("image"), async (req, res) => {
+router.post("/add", upload.array("media", 10), async (req, res) => {
   try {
     const { title, price, category, occasion, color } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "Image file is required." });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "At least one media file is required." });
     }
 
-    // Convert buffer to base64 so cloudinary can upload it from memory
-    const b64 = Buffer.from(req.file.buffer).toString("base64");
-    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+    const uploadPromises = req.files.map(async (file) => {
+      const b64 = Buffer.from(file.buffer).toString("base64");
+      const dataURI = `data:${file.mimetype};base64,${b64}`;
 
-    // Upload to Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(dataURI, {
-      folder: "jewelry_manager_products",
-      resource_type: "auto",
+      const uploadResponse = await cloudinary.uploader.upload(dataURI, {
+        folder: "jewelry_manager_products",
+        resource_type: "auto",
+      });
+
+      return {
+        url: uploadResponse.secure_url,
+        mediaType: uploadResponse.resource_type === 'video' ? 'video' : 'image'
+      };
     });
+
+    const uploadedMedia = await Promise.all(uploadPromises);
 
     const parsedCategory = parseArrayField(category);
     const parsedOccasion = parseArrayField(occasion);
@@ -73,7 +95,8 @@ router.post("/add", upload.single("image"), async (req, res) => {
       category: parsedCategory.length > 0 ? parsedCategory : ["Uncategorized"],
       occasion: parsedOccasion,
       color: parsedColor,
-      imageUrl: uploadResponse.secure_url,
+      imageUrl: uploadedMedia[0].url, // Fallback for components expecting a single primary image
+      media: uploadedMedia,
     });
 
     await newProduct.save();

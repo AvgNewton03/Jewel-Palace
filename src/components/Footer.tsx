@@ -4,7 +4,6 @@ import {
   Phone,
   Mail,
   Instagram,
-  Facebook,
   MessageCircle,
 } from "lucide-react";
 
@@ -12,7 +11,7 @@ export default function Footer() {
   return (
     <footer className="bg-foreground text-brand-bg">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Col */}
           <div className="col-span-1 md:col-span-1">
             <Link
@@ -34,13 +33,6 @@ export default function Footer() {
               >
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-brand-gold transition-colors"
-              >
-                <span className="sr-only">Facebook</span>
-                <Facebook className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -86,46 +78,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Customer Service */}
-          <div>
-            <h3 className="text-sm font-semibold text-brand-gold uppercase tracking-wider mb-4">
-              Customer Care
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  Shipping & Returns
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  Jewellery Care
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
+
 
           {/* Contact */}
           <div>
@@ -155,9 +108,14 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-brand-gold mr-3 flex-shrink-0" />
-                <span className="text-sm text-gray-300">
+                <a 
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=praveensipani215@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
                   praveensipani215@gmail.com
-                </span>
+                </a>
               </li>
             </ul>
           </div>

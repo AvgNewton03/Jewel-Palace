@@ -51,7 +51,7 @@ export default function Navbar() {
               <span className="sr-only">Search</span>
               <Search className="h-5 w-5" />
             </Link>
-            <Link href={user ? "/account" : "/login"} className="text-gray-900 hover:text-brand-maroon transition-colors p-2 hidden sm:block">
+            <Link href={user ? "/account" : "/login"} className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
               <span className="sr-only">Account</span>
               <User className={`h-5 w-5 ${user ? "fill-brand-maroon text-brand-maroon" : ""}`} />
             </Link>

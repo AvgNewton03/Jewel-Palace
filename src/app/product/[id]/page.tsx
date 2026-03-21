@@ -1,29 +1,79 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle, ShoppingBag, Store, Heart, Share2, Tag, ShieldCheck, Truck, RotateCcw } from "lucide-react";
+import axios from "axios";
+import { MessageCircle, ShoppingBag, Store, Heart, Share2, Tag, ShieldCheck, Truck, RotateCcw, Loader2 } from "lucide-react";
 
-export default function ProductDetail({ params }: { params: { id: string } }) {
-  // Mock product data based on ID
-  const product = {
-    id: params.id,
-    title: "Kundan Polki Bridal Choker Set with Pearls",
-    price: 4299,
-    originalPrice: 5999,
-    description: "Make a royal statement on your special day with our stunning Kundan Polki Choker Set. Handcrafted with precision, this set features intricate meenakari work on the reverse and is adorned with premium quality faux pearls and semi-precious emerald drops.",
-    features: [
-      "Anti-tarnish 22k gold plating",
-      "Hypoallergenic and skin-safe",
-      "Includes matching earrings and maang tikka",
-      "Adjustable dori closure for the perfect fit"
-    ],
-    occasion: "Wedding",
-    stock: 5,
-    images: [
-      "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1599643478514-4a4204b281f5?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=800"
-    ]
-  };
+interface MediaItem {
+  url: string;
+  mediaType: string;
+  _id?: string;
+}
+
+interface Product {
+  _id: string;
+  title: string;
+  price: number;
+  category: string[];
+  occasion: string[];
+  color: string[];
+  imageUrl: string;
+  media?: MediaItem[];
+}
+
+export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const { data } = await axios.get(`${API_URL}/api/products/${id}`);
+        setProduct(data);
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen py-16 flex justify-center items-center">
+        <Loader2 className="w-10 h-10 animate-spin text-brand-maroon" />
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="bg-white min-h-screen py-16 flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-serif text-gray-900 mb-4">Product Not Found</h2>
+        <Link href="/collections" className="text-brand-maroon hover:underline">
+          Return to Collections
+        </Link>
+      </div>
+    );
+  }
+
+  const mediaList = product.media && product.media.length > 0 
+    ? product.media 
+    : [{ url: product.imageUrl, mediaType: 'image' }];
+
+  const activeMedia = mediaList[activeMediaIndex];
+  
+  const occasionDisplay = product.occasion && product.occasion.length > 0 
+    ? product.occasion[0] 
+    : (product.category && product.category.length > 0 ? product.category[0] : "Jewellery");
 
   return (
     <div className="bg-white min-h-screen py-8 md:py-16">
@@ -48,30 +98,50 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
 
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
           
-          {/* Image Gallery */}
+          {/* Image Gallery Slider */}
           <div className="lg:w-1/2 flex flex-col-reverse md:flex-row gap-4">
             {/* Thumbnails */}
-            <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:w-24 flex-shrink-0 hide-scrollbar">
-              {product.images.map((img, idx) => (
-                <button key={idx} className={`relative w-20 h-24 md:w-24 md:h-32 flex-shrink-0 rounded-md overflow-hidden border-2 ${idx === 0 ? 'border-brand-maroon' : 'border-transparent'}`}>
-                  <Image src={img} alt={`${product.title} view ${idx + 1}`} fill className="object-cover" />
-                </button>
-              ))}
-              {/* Video Mock Thumbnail */}
-              <button className="relative w-20 h-24 md:w-24 md:h-32 flex-shrink-0 rounded-md overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center group">
-                <span className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors z-10"></span>
-                <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center z-20 shadow-sm relative pl-1">
-                  ▶
-                </span>
-              </button>
-            </div>
+            {mediaList.length > 1 && (
+              <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:w-24 flex-shrink-0 hide-scrollbar pb-2 md:pb-0">
+                {mediaList.map((item, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => setActiveMediaIndex(idx)}
+                    className={`relative w-20 h-24 md:w-24 md:h-32 flex-shrink-0 rounded-md overflow-hidden border-2 ${idx === activeMediaIndex ? 'border-brand-maroon' : 'border-transparent'}`}
+                  >
+                    {item.mediaType === 'video' ? (
+                      <div className="w-full h-full bg-gray-100 flex justify-center items-center group relative">
+                        <video src={item.url} className="object-cover w-full h-full opacity-50" />
+                        <div className="absolute inset-0 flex justify-center items-center bg-black/20">
+                          <span className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-sm shadow-sm pl-0.5">▶</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <Image src={item.url} alt={`${product.title} view ${idx + 1}`} fill className="object-cover" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
             
-            {/* Main Image */}
-            <div className="relative w-full aspect-[4/5] bg-gray-50 rounded-lg overflow-hidden flex-1">
-              <Image src={product.images[0]} alt={product.title} fill className="object-cover" priority />
+            {/* Main Media */}
+            <div className="relative w-full aspect-[4/5] bg-gray-50 rounded-lg overflow-hidden flex-1 flex items-center justify-center">
+              {activeMedia.mediaType === 'video' ? (
+                <video 
+                  src={activeMedia.url} 
+                  autoPlay 
+                  controls 
+                  loop 
+                  muted 
+                  className="w-full h-full object-contain bg-black"
+                />
+              ) : (
+                <Image src={activeMedia.url} alt={product.title} fill className="object-cover" priority />
+              )}
+              
               <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <span className="bg-brand-maroon text-white text-xs font-bold uppercase tracking-wider py-1.5 px-3 rounded">
-                  {product.occasion}
+                <span className="bg-brand-maroon text-white text-xs font-bold uppercase tracking-wider py-1.5 px-3 rounded shadow-sm">
+                  {occasionDisplay}
                 </span>
               </div>
             </div>
@@ -96,19 +166,20 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             {/* Price */}
             <div className="flex items-end gap-3 mb-6">
               <span className="text-3xl font-semibold text-brand-maroon">₹{product.price.toLocaleString("en-IN")}</span>
-              {product.originalPrice && (
-                <>
-                  <span className="text-lg text-gray-400 line-through mb-1">₹{product.originalPrice.toLocaleString("en-IN")}</span>
-                  <span className="text-sm font-medium text-brand-emerald mb-1.5 ml-2">
-                    {Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
-                  </span>
-                </>
-              )}
             </div>
 
-            <p className="text-gray-600 text-sm leading-relaxed mb-8">
-              {product.description}
+            <p className="text-gray-600 text-sm leading-relaxed mb-6 font-light">
+              This stunning piece is exactly what you need to complete your look. Beautifully handcrafted and designed for {occasionDisplay.toLowerCase()}.
             </p>
+
+            {product.color && product.color.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Accent Colors</h4>
+                <div className="flex gap-2 text-sm text-gray-600">
+                  {product.color.join(", ")}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="space-y-4 mb-8">
@@ -119,7 +190,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <a 
-                  href={`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product.id})`}
+                  href={`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id})`}
                   target="_blank" 
                   rel="noreferrer"
                   className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
@@ -134,34 +205,20 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            {/* Features/Details */}
+            {/* Trust Badges */}
             <div className="border-t border-gray-100 pt-8 mt-4">
-              <h3 className="font-serif text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                <Tag className="h-4 w-4 text-brand-gold" />
-                Product Highlights
-              </h3>
-              <ul className="space-y-2 mb-8">
-                {product.features.map((feature, i) => (
-                  <li key={i} className="flex items-start text-sm text-gray-600">
-                    <span className="mr-2 text-brand-gold">•</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {/* Trust Badges */}
               <div className="grid grid-cols-3 gap-2 p-4 bg-gray-50 rounded-lg border border-gray-100">
                 <div className="flex flex-col items-center text-center p-2">
                   <ShieldCheck className="h-6 w-6 text-gray-500 mb-2" />
-                  <span className="text-xs text-gray-600 font-medium">1 Year Polish Warranty</span>
+                  <span className="text-xs text-gray-600 font-medium">Authentic Quality</span>
                 </div>
                 <div className="flex flex-col items-center text-center p-2 border-x border-gray-200">
                   <Truck className="h-6 w-6 text-gray-500 mb-2" />
-                  <span className="text-xs text-gray-600 font-medium">Free Express Delivery</span>
+                  <span className="text-xs text-gray-600 font-medium">Safe Shipping</span>
                 </div>
                 <div className="flex flex-col items-center text-center p-2">
                   <RotateCcw className="h-6 w-6 text-gray-500 mb-2" />
-                  <span className="text-xs text-gray-600 font-medium">7-Day Easy Returns</span>
+                  <span className="text-xs text-gray-600 font-medium">Reliable Service</span>
                 </div>
               </div>
             </div>

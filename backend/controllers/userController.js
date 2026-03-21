@@ -28,6 +28,7 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        wishlist: user.wishlist,
         token: generateToken(user._id),
       });
     } else {
@@ -49,6 +50,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        wishlist: user.wishlist,
         token: generateToken(user._id),
       });
     } else {
