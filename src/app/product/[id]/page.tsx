@@ -18,6 +18,7 @@ interface MediaItem {
 interface Product {
   _id: string;
   title: string;
+  description?: string;
   price: number;
   category: string[];
   occasion: string[];
@@ -209,9 +210,15 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
               <span className="text-3xl font-semibold text-brand-maroon">₹{product.price.toLocaleString("en-IN")}</span>
             </div>
 
-            <p className="text-gray-600 text-sm leading-relaxed mb-6 font-light">
-              This stunning piece is exactly what you need to complete your look. Beautifully handcrafted and designed for {occasionDisplay.toLowerCase()}.
-            </p>
+            {product.description ? (
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 font-light whitespace-pre-wrap">
+                {product.description}
+              </p>
+            ) : (
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 font-light">
+                This stunning piece is exactly what you need to complete your look. Beautifully handcrafted and designed for {occasionDisplay.toLowerCase()}.
+              </p>
+            )}
 
             {product.color && product.color.length > 0 && (
               <div className="mb-6">

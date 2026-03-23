@@ -61,7 +61,7 @@ router.use(protect);
 // POST route /api/products/add
 router.post("/add", upload.array("media", 10), async (req, res) => {
   try {
-    const { title, price, category, occasion, color } = req.body;
+    const { title, price, description, category, occasion, color } = req.body;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "At least one media file is required." });
@@ -88,10 +88,10 @@ router.post("/add", upload.array("media", 10), async (req, res) => {
     const parsedOccasion = parseArrayField(occasion);
     const parsedColor = parseArrayField(color);
 
-    // Create and save the new product in MongoDB
     const newProduct = new Product({
       title,
       price: Number(price),
+      description: description || '',
       category: parsedCategory.length > 0 ? parsedCategory : ["Uncategorized"],
       occasion: parsedOccasion,
       color: parsedColor,
@@ -120,6 +120,10 @@ router.put("/:id", async (req, res) => {
       product.title = req.body.title || product.title;
       product.price = req.body.price || product.price;
       
+      if (req.body.description !== undefined) {
+        product.description = req.body.description;
+      }
+
       if (req.body.category) product.category = parseArrayField(req.body.category);
       if (req.body.occasion) product.occasion = parseArrayField(req.body.occasion);
       if (req.body.color) product.color = parseArrayField(req.body.color);

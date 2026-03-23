@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categories, setCategories] = useState<string[]>(['Necklaces']);
   const [occasions, setOccasions] = useState<string[]>([]);
@@ -26,6 +27,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
 
     const formData = new FormData();
     formData.append('title', title);
+    if (description) formData.append('description', description);
     formData.append('price', price);
     formData.append('category', JSON.stringify(categories));
     formData.append('occasion', JSON.stringify(occasions));
@@ -50,6 +52,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
       
       // Clear form
       setTitle('');
+      setDescription('');
       setPrice('');
       setCategories(['Necklaces']);
       setOccasions([]);
@@ -100,6 +103,20 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
             placeholder="e.g. Diamond Necklace"
             disabled={isLoading}
             required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Description
+          </label>
+          <textarea
+            id="product-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-sm min-h-[100px] resize-y"
+            placeholder="Product description..."
+            disabled={isLoading}
           />
         </div>
 
