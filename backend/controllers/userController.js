@@ -7,18 +7,31 @@ export const syncUser = async (req, res) => {
       return res.status(401).json({ message: "Not authenticated with Firebase" });
     }
 
-    // Try to find the user.
+    // Try to find the user by their new Firebase UID.
     let user = await User.findOne({ firebaseUid: firebaseUser.uid });
 
     if (!user) {
-      // Create user if not found
-      // We will take name and email from Firebase. phone_number can also be mapped if it exists
-      const { name, email, phone_number } = req.body;
-      user = await User.create({
-        firebaseUid: firebaseUser.uid,
-        name: name || firebaseUser.name || (firebaseUser.phone_number ? "User" : "New User"),
-        email: email || firebaseUser.email || `${firebaseUser.uid}@placeholder.com`, // Email might be omitted if phone auth
-      });
+      // If not matched by Firebase UID, check if they exist by email (from older Auth system)
+      const inputEmail = req.body.email || firebaseUser.email;
+      
+      if (inputEmail) {
+        user = await User.findOne({ email: inputEmail });
+        if (user) {
+          // Link this pre-existing user to the new Firebase UID
+          user.firebaseUid = firebaseUser.uid;
+          await user.save();
+        }
+      }
+
+      // If user still doesn't exist at this point, create a brand new user
+      if (!user) {
+        const { name, phone_number } = req.body;
+        user = await User.create({
+          firebaseUid: firebaseUser.uid,
+          name: name || firebaseUser.name || (firebaseUser.phone_number ? "User" : "New User"),
+          email: inputEmail || `${firebaseUser.uid}@placeholder.com`, 
+        });
+      }
     }
 
     res.json({

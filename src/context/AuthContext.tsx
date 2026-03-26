@@ -1,8 +1,20 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useRef,
+  useCallback,
+} from "react";
 import axios from "axios";
-import { onAuthStateChanged, User as FirebaseUser, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  User as FirebaseUser,
+  signOut,
+} from "firebase/auth";
 import { auth } from "../lib/firebase";
 
 export interface User {
@@ -53,21 +65,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setFirebaseUser(currentUser);
-      
+
       if (currentUser) {
         try {
           const idToken = await currentUser.getIdToken();
           setToken(idToken);
           // Sync with our MongoDB backend
           await syncWithBackend(idToken);
-          
+
           // Resume any pending action after successful auth
           if (pendingActionRef.current) {
             const action = pendingActionRef.current;
             pendingActionRef.current = null;
             setTimeout(() => action(), 0); // Execute immediately after state processes
           }
-          
         } catch (error) {
           console.error("Failed to sync user with backend", error);
         }
@@ -81,18 +92,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const syncWithBackend = async (authToken: string) => {
+  const syncWithBackend = async () => {
     try {
-      const { data } = await axios.post(
-        `${API_BASE}/api/users/sync`,
-        {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-      setUser(data);
-    } catch (error) {
-      console.error("Failed to sync user profile", error);
-    } finally {
-      setIsLoading(false);
+      // 1. Check if you even have a token/user before making the request.
+      // (Adjust 'localStorage.getItem("token")' based on how you store your auth token)
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        // If there's no token, just stop here. Don't make the backend angry.
+        return;
+      }
+
+      // 2. Make the request if a token exists
+      const response = await axios.get("http://localhost:5000/api/users/sync", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Handle your successful sync here (e.g., setUser(response.data))
+    } catch (error: any) {
+      // 3. Catch the 401 silently so it doesn't break your modal!
+      if (error.response && error.response.status === 401) {
+        console.warn("User is not authenticated yet. No need to panic.");
+        // Optional: Clear any invalid user state here just to be safe
+      } else {
+        // This will log actual backend crashes (like 500 errors)
+        console.error("An actual error occurred while syncing:", error);
+      }
     }
   };
 
@@ -124,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await axios.post(
         `${API_BASE}/api/users/wishlist/${productId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       await refreshUserProfile();
     } catch (error) {
@@ -135,10 +162,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const removeFromWishlist = async (productId: string) => {
     if (!token || !user) return;
     try {
-      await axios.delete(
-        `${API_BASE}/api/users/wishlist/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.delete(`${API_BASE}/api/users/wishlist/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       await refreshUserProfile();
     } catch (error) {
       console.error("Failed to remove from wishlist", error);
@@ -161,18 +187,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ 
-        user, 
-        firebaseUser, 
-        token, 
-        isLoading, 
-        logout, 
-        addToWishlist, 
+      value={{
+        user,
+        firebaseUser,
+        token,
+        isLoading,
+        logout,
+        addToWishlist,
         removeFromWishlist,
         refreshUserProfile,
         isAuthModalOpen,
         openAuthModal,
-        closeAuthModal
+        closeAuthModal,
       }}
     >
       {children}
