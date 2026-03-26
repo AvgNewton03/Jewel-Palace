@@ -35,7 +35,6 @@ interface AuthContextType {
   addToWishlist: (productId: string) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   refreshUserProfile: () => Promise<void>;
-  // Auth Modal State
   isAuthModalOpen: boolean;
   openAuthModal: (action?: () => void) => void;
   closeAuthModal: () => void;
@@ -50,6 +49,9 @@ declare global {
   }
 }
 
+// Define API_BASE outside the component so it's globally available
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -60,7 +62,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  // Wrapped in useCallback to prevent React hydration/dependency issues
+  const syncWithBackend = useCallback(async (authToken?: string) => {
+    try {
+      const currentToken = authToken || localStorage.getItem("token");
+
+      if (!currentToken) {
+        return;
+      }
+
+      // Replaced hardcoded localhost with API_BASE for Vercel compatibility
+      const response = await axios.get(`${API_BASE}/api/users/sync`, {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
+      });
+
+      // Update the user state with data from the backend!
+      if (response.data) {
+        setUser(response.data);
+      }
+    } catch (error: any) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          console.warn("User is not authenticated yet.");
+        } else if (error.response.status === 404) {
+          console.warn("⚠️ Backend route /api/users/sync not found (404).");
+        } else {
+          console.error(`Backend error (${error.response.status}):`, error);
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -70,6 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const idToken = await currentUser.getIdToken();
           setToken(idToken);
+          localStorage.setItem("token", idToken); // Sync to localStorage
+
           // Sync with our MongoDB backend
           await syncWithBackend(idToken);
 
@@ -77,51 +112,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (pendingActionRef.current) {
             const action = pendingActionRef.current;
             pendingActionRef.current = null;
-            setTimeout(() => action(), 0); // Execute immediately after state processes
+            setTimeout(() => action(), 0);
           }
         } catch (error) {
           console.error("Failed to sync user with backend", error);
+        } finally {
+          setIsLoading(false);
         }
       } else {
         setToken(null);
         setUser(null);
+        localStorage.removeItem("token"); // Clear stale tokens
         setIsLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  const syncWithBackend = async (authToken?: string) => {
-    try {
-      // 1. Check if you even have a token/user before making the request.
-      // (Adjust 'localStorage.getItem("token")' based on how you store your auth token)
-      const token = authToken || localStorage.getItem("token");
-
-      if (!token) {
-        // If there's no token, just stop here. Don't make the backend angry.
-        return;
-      }
-
-      // 2. Make the request if a token exists
-      const response = await axios.get("http://localhost:5000/api/users/sync", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Handle your successful sync here (e.g., setUser(response.data))
-    } catch (error: any) {
-      // 3. Catch the 401 silently so it doesn't break your modal!
-      if (error.response && error.response.status === 401) {
-        console.warn("User is not authenticated yet. No need to panic.");
-        // Optional: Clear any invalid user state here just to be safe
-      } else {
-        // This will log actual backend crashes (like 500 errors)
-        console.error("An actual error occurred while syncing:", error);
-      }
-    }
-  };
+  }, [syncWithBackend]);
 
   const refreshUserProfile = async () => {
     if (!token) return;
@@ -140,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signOut(auth);
       setToken(null);
       setUser(null);
+      localStorage.removeItem("token");
     } catch (error) {
       console.error("Logout error", error);
     }
@@ -180,8 +188,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const closeAuthModal = useCallback(() => {
     setIsAuthModalOpen(false);
-    // Optionally clear pending action if modal is closed manually?
-    // Let's keep it cleared so we don't unexpectedly trigger it later
     pendingActionRef.current = null;
   }, []);
 
