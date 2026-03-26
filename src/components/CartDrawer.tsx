@@ -5,34 +5,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUI } from "@/context/UIContext";
 import { useCart } from "@/context/CartContext";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function CartDrawer() {
   const { isCartOpen, setIsCartOpen } = useUI();
   const { cart, removeFromCart, updateQuantity, cartTotal, itemCount } =
     useCart();
+  const requireAuth = useRequireAuth();
 
   if (!isCartOpen) return null;
 
   const handleCheckoutWhatsApp = () => {
     if (cart.length === 0) return;
 
-    // Build the order summary text
-    let message =
-      "Hi, I would like to place an order for the following items:\n\n";
-    cart.forEach((item, index) => {
-      message += `${index + 1}. ${item.title}\n`;
-      message += `   Quantity: ${item.quantity}\n`;
-      message += `   Price: ₹${item.price.toLocaleString("en-IN")}\n\n`;
+    requireAuth(() => {
+      // Build the order summary text
+      let message =
+        "Hi, I would like to place an order for the following items:\n\n";
+      cart.forEach((item, index) => {
+        message += `${index + 1}. ${item.title}\n`;
+        message += `   Quantity: ${item.quantity}\n`;
+        message += `   Price: ₹${item.price.toLocaleString("en-IN")}\n\n`;
+      });
+
+      message += `*Grand Total: ₹${cartTotal.toLocaleString("en-IN")}*\n\n`;
+      message += "Please let me know the next steps for payment and shipping.";
+
+      const phoneNumber = "919029923215"; // Replace with store owner's number
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappUrl, "_blank");
+      setIsCartOpen(false); // Optionally close cart after redirect
     });
-
-    message += `*Grand Total: ₹${cartTotal.toLocaleString("en-IN")}*\n\n`;
-    message += "Please let me know the next steps for payment and shipping.";
-
-    const phoneNumber = "919029923215"; // Replace with store owner's number
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-    window.open(whatsappUrl, "_blank");
-    setIsCartOpen(false); // Optionally close cart after redirect
   };
 
   return (

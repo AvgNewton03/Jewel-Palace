@@ -8,6 +8,7 @@ import MobileMenu from "@/components/MobileMenu";
 import { UIProvider } from "@/context/UIContext";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import AuthModal from "@/components/AuthModal";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -45,6 +46,7 @@ export default function RootLayout({
               <main className="flex-1 flex flex-col">{children}</main>
               <Footer />
               <CartDrawer />
+              <AuthModal />
             </UIProvider>
           </CartProvider>
         </AuthProvider>

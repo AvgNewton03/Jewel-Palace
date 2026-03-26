@@ -8,6 +8,7 @@ import axios from "axios";
 import { MessageCircle, ShoppingBag, Store, Heart, Tag, ShieldCheck, Truck, RotateCcw, Loader2 } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface MediaItem {
   url: string;
@@ -37,6 +38,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const requireAuth = useRequireAuth();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -89,15 +91,14 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!user) {
-      return router.push('/login');
-    }
     if (product) {
-      if (isWishlisted) {
-        await removeFromWishlist(product._id);
-      } else {
-        await addToWishlist(product._id);
-      }
+      requireAuth(async () => {
+        if (isWishlisted) {
+          await removeFromWishlist(product._id);
+        } else {
+          await addToWishlist(product._id);
+        }
+      });
     }
   };
 
@@ -240,24 +241,28 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
               </button>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <a 
-                  href={`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`}
-                  target="_blank" 
-                  rel="noreferrer"
+                <button 
+                  onClick={() => {
+                    requireAuth(() => {
+                      window.open(`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                    });
+                  }}
                   className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
                 >
                   <MessageCircle className="h-5 w-5" />
                   Order on WhatsApp
-                </a>
-                <a 
-                  href={`https://wa.me/919029923215?text=Hi! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`}
-                  target="_blank" 
-                  rel="noreferrer"
+                </button>
+                <button 
+                  onClick={() => {
+                    requireAuth(() => {
+                      window.open(`https://wa.me/919029923215?text=Hi! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                    });
+                  }}
                   className="bg-brand-gold/10 text-brand-maroon border border-brand-gold/50 font-medium py-3.5 rounded hover:bg-brand-gold/20 transition-all flex justify-center items-center gap-2"
                 >
                   <Store className="h-5 w-5" />
                   Reserve & Pick
-                </a>
+                </button>
               </div>
             </div>
 

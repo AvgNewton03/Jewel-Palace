@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface ProductCardProps {
   id: string;
@@ -39,16 +40,17 @@ export default function ProductCard({
     (typeof item === 'string' ? item : item._id) === id
   );
 
+  const requireAuth = useRequireAuth();
+
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!user) {
-      return router.push('/login');
-    }
-    if (isWishlisted) {
-      await removeFromWishlist(id);
-    } else {
-      await addToWishlist(id);
-    }
+    requireAuth(async () => {
+      if (isWishlisted) {
+        await removeFromWishlist(id);
+      } else {
+        await addToWishlist(id);
+      }
+    });
   };
 
   return (

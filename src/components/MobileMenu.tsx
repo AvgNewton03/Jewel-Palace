@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function MobileMenu() {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useUI();
-  const { user, logout } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const pathname = usePathname();
 
   if (pathname?.startsWith('/admin')) return null;
@@ -49,7 +49,15 @@ export default function MobileMenu() {
             {user ? (
               <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">My Account</Link>
             ) : (
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Sign In</Link>
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openAuthModal();
+                }} 
+                className="w-full text-left block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md"
+              >
+                Sign In
+              </button>
             )}
           </div>
         </nav>

@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function Navbar() {
   const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen } = useUI();
   const { itemCount } = useCart();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const pathname = usePathname();
 
   if (pathname?.startsWith('/admin')) return null;
@@ -55,10 +55,20 @@ export default function Navbar() {
               <span className="sr-only">Search</span>
               <Search className="h-5 w-5" />
             </Link>
-            <Link href={user ? "/account" : "/login"} className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
-              <span className="sr-only">Account</span>
-              <User className={`h-5 w-5 ${user ? "fill-brand-maroon text-brand-maroon" : ""}`} />
-            </Link>
+            {user ? (
+              <Link href="/account" className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
+                <span className="sr-only">Account</span>
+                <User className="h-5 w-5 fill-brand-maroon text-brand-maroon" />
+              </Link>
+            ) : (
+              <button 
+                onClick={() => openAuthModal()} 
+                className="text-gray-900 hover:text-brand-maroon transition-colors p-2"
+              >
+                <span className="sr-only">Sign In</span>
+                <User className="h-5 w-5" />
+              </button>
+            )}
             <button 
               onClick={() => setIsCartOpen(true)}
               className="text-gray-900 hover:text-brand-maroon transition-colors p-2 relative"

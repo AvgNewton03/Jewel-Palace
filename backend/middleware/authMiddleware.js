@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import admin from '../firebaseAdmin.js';
 
 const protect = async (req, res, next) => {
   let token;
@@ -41,23 +42,21 @@ const protectUser = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Verify Firebase ID token
+      const decodedToken = await admin.auth().verifyIdToken(token);
       
       const User = (await import('../models/User.js')).default;
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findOne({ firebaseUid: decodedToken.uid });
       
-      if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
-      }
+      // We also set firebaseUser in case req.user doesn't exist yet (before sync)
+      req.firebaseUser = decodedToken;
 
       next();
     } catch (error) {
-      console.error(error);
+      console.error("Auth Middleware Error:", error);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
-  }
-
-  if (!token) {
+  } else {
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };

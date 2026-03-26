@@ -1,7 +1,6 @@
 import express from "express";
 import {
-  registerUser,
-  loginUser,
+  syncUser,
   getUserProfile,
   addWishlist,
   removeWishlist
@@ -10,8 +9,7 @@ import { protectUser } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/sync", protectUser, syncUser);
 router.get("/profile", protectUser, getUserProfile);
 router.post("/wishlist/:id", protectUser, addWishlist);
 router.delete("/wishlist/:id", protectUser, removeWishlist);

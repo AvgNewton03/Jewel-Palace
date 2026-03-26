@@ -1,62 +1,36 @@
 import User from "../models/User.js";
-import jwt from "jsonwebtoken";
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || "fallback_secret", {
-    expiresIn: "30d",
-  });
-};
-
-export const registerUser = async (req, res) => {
+export const syncUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+    const { firebaseUser } = req;
+    if (!firebaseUser) {
+      return res.status(401).json({ message: "Not authenticated with Firebase" });
     }
 
-    const user = await User.create({
-      name,
-      email,
-      password,
+    // Try to find the user.
+    let user = await User.findOne({ firebaseUid: firebaseUser.uid });
+
+    if (!user) {
+      // Create user if not found
+      // We will take name and email from Firebase. phone_number can also be mapped if it exists
+      const { name, email, phone_number } = req.body;
+      user = await User.create({
+        firebaseUid: firebaseUser.uid,
+        name: name || firebaseUser.name || (firebaseUser.phone_number ? "User" : "New User"),
+        email: email || firebaseUser.email || `${firebaseUser.uid}@placeholder.com`, // Email might be omitted if phone auth
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      wishlist: user.wishlist,
+      addresses: user.addresses,
     });
-
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        wishlist: user.wishlist,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(400).json({ message: "Invalid user data" });
-    }
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        wishlist: user.wishlist,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
-    }
-  } catch (error) {
+    console.error("Sync Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
