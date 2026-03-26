@@ -92,11 +92,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const syncWithBackend = async () => {
+  const syncWithBackend = async (authToken?: string) => {
     try {
       // 1. Check if you even have a token/user before making the request.
       // (Adjust 'localStorage.getItem("token")' based on how you store your auth token)
-      const token = localStorage.getItem("token");
+      const token = authToken || localStorage.getItem("token");
 
       if (!token) {
         // If there's no token, just stop here. Don't make the backend angry.
