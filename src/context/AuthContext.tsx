@@ -104,6 +104,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setFirebaseUser(currentUser);
 
       if (currentUser) {
+        // Enforce email verification for password users
+        const isPasswordUser = currentUser.providerData.some((p) => p.providerId === "password");
+        if (isPasswordUser && !currentUser.emailVerified) {
+          await signOut(auth); // block unverified login
+          setToken(null);
+          setUser(null);
+          localStorage.removeItem("token");
+          setIsLoading(false);
+          return;
+        }
+
         try {
           const idToken = await currentUser.getIdToken();
           setToken(idToken);

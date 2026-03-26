@@ -1,44 +1,41 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { X, Mail, Phone, Loader2 } from "lucide-react";
+import { X, Loader2, ArrowRight, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   RecaptchaVerifier, 
   signInWithPhoneNumber,
-  ConfirmationResult
+  ConfirmationResult,
+  fetchSignInMethodsForEmail,
+  sendEmailVerification
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import axios from "axios";
+
+type AuthStep = "input" | "email-login" | "email-signup" | "phone-verify" | "unverified";
 
 export default function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, firebaseUser } = useAuth();
   
-  const [tab, setTab] = useState<"email" | "phone">("email");
-  const [isLogin, setIsLogin] = useState(true);
-  
-  const [email, setEmail] = useState("");
+  const [step, setStep] = useState<AuthStep>("input");
+  const [inputVal, setInputVal] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   
-  const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Automatically close modal if logged in successfully
-    if (firebaseUser && isAuthModalOpen) {
-      closeAuthModal();
-      // Reset state for next time
-      setConfirmationResult(null);
-      setOtp("");
-      setError("");
+    if (firebaseUser?.emailVerified !== false && isAuthModalOpen) {
+      handleClose();
     }
-  }, [firebaseUser, isAuthModalOpen, closeAuthModal]);
+  }, [firebaseUser, isAuthModalOpen]);
 
   useEffect(() => {
     return () => {
@@ -50,6 +47,21 @@ export default function AuthModal() {
     };
   }, []);
 
+  const handleClose = () => {
+    closeAuthModal();
+    // Reset state after animation
+    setTimeout(() => {
+      setStep("input");
+      setInputVal("");
+      setPassword("");
+      setName("");
+      setOtp("");
+      setConfirmationResult(null);
+      setError("");
+      setMessage("");
+    }, 300);
+  };
+
   // Handle reCAPTCHA for phone auth safely
   const setupRecaptcha = () => {
     if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
@@ -59,36 +71,86 @@ export default function AuthModal() {
     }
   };
 
-  const syncUserSession = async (firebaseIdToken: string) => {
+  const handleInputSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    
+    if (!inputVal) return;
+
+    setLoading(true);
+    
+    // Smart Input Detection
+    const isEmail = inputVal.includes('@');
+
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.post(
-        `${API_BASE}/api/users/sync`,
-        { name }, // Send name for registration
-        { headers: { Authorization: `Bearer ${firebaseIdToken}` } }
-      );
-    } catch (e) {
-      console.error("Backend sync failed immediately after login:", e);
+      if (isEmail) {
+        // Auto-Routing for Email
+        const methods = await fetchSignInMethodsForEmail(auth, inputVal);
+        if (methods.length > 0) {
+          setStep("email-login");
+        } else {
+          setStep("email-signup");
+        }
+      } else {
+        // Treat as phone number
+        setStep("phone-verify");
+        // We do NOT auto-send OTP here, letting the user enter their name if they are new
+        // and confirm the number before sending.
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to verify input.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      let userCredential;
-      if (isLogin) {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, inputVal, password);
+      // AuthContext will handle checking emailVerified and Syncing via onAuthStateChanged
+      if (!userCredential.user.emailVerified) {
+        setStep("unverified");
+        // Context will automatically sign them out
       }
-      // Immediately make an Axios POST request to /api/users/sync
-      const idToken = await userCredential.user.getIdToken();
-      await syncUserSession(idToken);
+    } catch (err: any) {
+      setError("Invalid password or account does not exist.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, inputVal, password);
+      
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      try {
+        // We sync name explicitly because context syncWithBackend doesn't take Name.
+        const idToken = await userCredential.user.getIdToken();
+        await fetch(`${API_BASE}/api/users/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ name })
+        });
+      } catch (e) {
+        console.error("Initial Name sync failed", e);
+      }
+
+      await sendEmailVerification(userCredential.user);
+      setStep("unverified");
       
     } catch (err: any) {
-      setError(err.message || "Failed to authenticate");
+      setError(err.message || "Failed to create account.");
     } finally {
       setLoading(false);
     }
@@ -102,11 +164,12 @@ export default function AuthModal() {
       setupRecaptcha();
       const appVerifier = window.recaptchaVerifier;
       // Ensure phone is in E.164 format e.g., +919876543210
-      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`; 
+      const formattedPhone = inputVal.startsWith("+") ? inputVal : `+91${inputVal}`; 
       const confResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       setConfirmationResult(confResult);
+      setMessage(`OTP sent to ${formattedPhone}`);
     } catch (err: any) {
-      setError(err.message || "Failed to send OTP");
+      setError(err.message || "Failed to send OTP.");
     } finally {
       setLoading(false);
     }
@@ -119,12 +182,24 @@ export default function AuthModal() {
     setLoading(true);
     try {
       const result = await confirmationResult.confirm(otp);
-      // Immediately make an Axios POST request to /api/users/sync
-      const idToken = await result.user.getIdToken();
-      await syncUserSession(idToken);
       
+      // If it's a new user and they gave a Name, we sync it
+      if (name) {
+        const idToken = await result.user.getIdToken();
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        await fetch(`${API_BASE}/api/users/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ name })
+        }).catch(e => console.error(e));
+      }
+      
+      // onAuthStateChanged in AuthContext will handle the standard sync & state update
     } catch (err: any) {
-      setError(err.message || "Invalid OTP");
+      setError("Invalid OTP.");
     } finally {
       setLoading(false);
     }
@@ -134,74 +209,84 @@ export default function AuthModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden relative">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden relative" onClick={e => e.stopPropagation()}>
         <button 
-          onClick={closeAuthModal} 
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors"
+          onClick={handleClose} 
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition-colors z-10"
         >
           <X className="w-5 h-5" />
         </button>
+
+        {step !== "input" && step !== "unverified" && (
+           <button 
+             onClick={() => { setStep("input"); setError(""); setMessage(""); setConfirmationResult(null); }}
+             className="absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors flex items-center text-sm z-10"
+           >
+             <ChevronLeft className="w-4 h-4 mr-1" /> Back
+           </button>
+        )}
         
-        <div className="p-8">
+        <div className="p-8 pt-12">
           <h2 className="text-2xl font-serif text-brand-maroon text-center mb-6 tracking-wide">
-            {isLogin ? "Welcome Back" : "Create Account"}
+            {step === "input" && "Welcome to Jewel Palace"}
+            {step === "email-login" && "Sign In"}
+            {step === "email-signup" && "Create Account"}
+            {step === "phone-verify" && "Verify Phone Number"}
+            {step === "unverified" && "Check Your Email"}
           </h2>
 
-          <div className="flex border-b border-gray-200 mb-6">
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "email" ? "border-b-2 border-brand-maroon text-brand-maroon" : "text-gray-400 hover:text-gray-700"}`}
-              onClick={() => { setTab("email"); setError(""); }}
-            >
-              <Mail className="w-4 h-4 inline-block mr-2" />
-              Email
-            </button>
-            <button
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "phone" ? "border-b-2 border-brand-maroon text-brand-maroon" : "text-gray-400 hover:text-gray-700"}`}
-              onClick={() => { setTab("phone"); setError(""); setConfirmationResult(null); }}
-            >
-              <Phone className="w-4 h-4 inline-block mr-2" />
-              Phone OTP
-            </button>
-          </div>
-
           {error && (
-            <div className="mb-5 text-sm font-medium text-red-600 bg-red-50/50 border border-red-100 p-3 rounded text-center">
+            <div className="mb-5 text-sm font-medium text-red-600 bg-red-50/50 border border-red-100 p-3 rounded text-center break-words">
               {error}
             </div>
           )}
 
-          {tab === "email" && (
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {!isLogin && (
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Full Name</label>
+          {message && !error && (
+            <div className="mb-5 text-sm font-medium text-green-600 bg-green-50/50 border border-green-100 p-3 rounded text-center">
+              {message}
+            </div>
+          )}
+
+          {step === "input" && (
+            <form onSubmit={handleInputSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">Email or Phone Number</label>
+                <div className="relative">
                   <input
                     type="text"
                     required
-                    className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
+                    autoFocus
+                    className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                    value={inputVal}
+                    onChange={(e) => setInputVal(e.target.value)}
+                    placeholder="name@example.com or 9876543210"
                   />
                 </div>
-              )}
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !inputVal.trim()}
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center group cursor-pointer"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                  <>Continue <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" /></>
+                )}
+              </button>
+            </form>
+          )}
+
+          {step === "email-login" && (
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="text-sm text-gray-600 mb-4 text-center">
+                Logging in as <span className="font-semibold text-gray-900">{inputVal}</span>
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Password</label>
                 <input
                   type="password"
                   required
-                  className="w-full border border-gray-200 rounded px-4 py-2.5 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                  autoFocus
+                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -210,49 +295,86 @@ export default function AuthModal() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center mt-2 group"
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? "Sign In" : "Create Account")}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
               </button>
             </form>
           )}
 
-          {tab === "phone" && (
-            <div>
+          {step === "email-signup" && (
+            <form onSubmit={handleEmailSignup} className="space-y-4">
+              <div className="text-sm text-gray-600 mb-4 text-center">
+                Creating account for <span className="font-semibold text-gray-900">{inputVal}</span>
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">New Password</label>
+                <input
+                  type="password"
+                  required
+                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="•••••••• (Min 6 chars)"
+                  minLength={6}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign Up"}
+              </button>
+            </form>
+          )}
+
+          {step === "phone-verify" && (
+            <div className="space-y-5">
               {!confirmationResult ? (
-                <form onSubmit={handlePhoneSendOtp} className="space-y-5">
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Phone Number</label>
-                    <div className="flex shadow-sm">
-                      <span className="inline-flex items-center px-4 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 rounded-l text-sm font-medium">
-                        +91
-                      </span>
-                      <input
-                        type="tel"
-                        required
-                        className="flex-1 w-full border border-gray-200 rounded-r px-4 py-2.5 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                        placeholder="98765 43210"
-                      />
-                    </div>
+                <form onSubmit={handlePhoneSendOtp} className="space-y-4">
+                  <div className="text-sm text-gray-600 mb-2 text-center">
+                    Using <span className="font-semibold text-gray-900">{inputVal}</span>
                   </div>
-                  <div id="recaptcha-container"></div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Full Name (If new user)</label>
+                    <input
+                      type="text"
+                      className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Optional"
+                    />
+                  </div>
+                  <div id="recaptcha-container" className="flex justify-center my-2"></div>
                   <button
                     type="submit"
-                    disabled={loading || phone.length < 10}
+                    disabled={loading}
                     className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send OTP"}
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handlePhoneVerifyOtp} className="space-y-5">
+                <form onSubmit={handlePhoneVerifyOtp} className="space-y-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-center text-gray-500 mb-2">Enter OTP sent to +91 {phone}</label>
+                    <label className="block text-xs uppercase tracking-wider text-center text-gray-500 mb-2 font-medium">Enter 6-digit OTP</label>
                     <input
                       type="text"
                       required
+                      autoFocus
                       className="w-full border border-gray-200 rounded px-4 py-3 text-lg focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none text-center tracking-[0.5em] font-medium transition-all"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
@@ -263,34 +385,33 @@ export default function AuthModal() {
                   <button
                     type="submit"
                     disabled={loading || otp.length !== 6}
-                    className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center"
+                    className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center mt-4"
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify OTP"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmationResult(null)}
-                    className="w-full text-sm text-brand-maroon hover:text-brand-maroon/80 underline decoration-transparent hover:decoration-current transition-all"
-                  >
-                    Change Phone Number
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Sign In"}
                   </button>
                 </form>
               )}
             </div>
           )}
 
-          {tab === "email" && (
-            <div className="mt-6 text-center text-sm text-gray-500">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
+          {step === "unverified" && (
+            <div className="flex flex-col items-center text-center space-y-4 py-4">
+              <CheckCircle2 className="w-16 h-16 text-green-500 mb-2" />
+              <p className="text-gray-600">
+                A verification link has been sent to <strong>{inputVal}</strong>.
+              </p>
+              <p className="text-sm text-gray-500">
+                Please check your inbox (and spam folder) to verify your account. You will not be able to log in until it is verified.
+              </p>
               <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-brand-maroon hover:text-brand-maroon/80 font-medium ml-1 underline transition-colors"
+                onClick={handleClose}
+                className="w-full border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-3 rounded transition-all duration-300 mt-4"
               >
-                {isLogin ? "Create Account" : "Sign In"}
+                Close
               </button>
             </div>
           )}
+
         </div>
       </div>
     </div>
