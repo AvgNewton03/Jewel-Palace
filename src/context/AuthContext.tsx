@@ -71,12 +71,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Replaced hardcoded localhost with API_BASE for Vercel compatibility
-      const response = await axios.get(`${API_BASE}/api/users/sync`, {
-        headers: {
-          Authorization: `Bearer ${currentToken}`,
+      // CHANGED: axios.get is now axios.post, and we added {} as the empty body
+      const response = await axios.post(
+        `${API_BASE}/api/users/sync`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
         },
-      });
+      );
 
       // Update the user state with data from the backend!
       if (response.data) {
