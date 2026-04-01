@@ -105,7 +105,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (currentUser) {
         // Enforce email verification for password users
-        const isPasswordUser = currentUser.providerData.some((p) => p.providerId === "password");
+        const isPasswordUser = currentUser.providerData.some(
+          (p) => p.providerId === "password",
+        );
         if (isPasswordUser && !currentUser.emailVerified) {
           await signOut(auth); // block unverified login
           setToken(null);
@@ -136,12 +138,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Force a fallback user if backend sync failed (e.g. CORS or network error)
           setUser((prev) => {
             if (!prev && currentUser) {
+              let localWishlist: string[] = [];
+              try {
+                const stored = localStorage.getItem(
+                  `wishlist_${currentUser.uid}`,
+                );
+                if (stored) localWishlist = JSON.parse(stored);
+              } catch (e) {}
+
               return {
                 _id: currentUser.uid,
                 name: currentUser.displayName || "User",
                 email: currentUser.email || "",
                 role: "customer",
-                wishlist: [],
+                wishlist: localWishlist,
                 addresses: [],
               };
             }
@@ -165,7 +175,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data } = await axios.get(`${API_BASE}/api/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUser(data);
+      if (data) {
+        setUser(data);
+        if (firebaseUser) {
+          const ids = data.wishlist.map((item: any) =>
+            typeof item === "string" ? item : item._id,
+          );
+          localStorage.setItem(
+            `wishlist_${firebaseUser.uid}`,
+            JSON.stringify(ids),
+          );
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch user profile", error);
     }
@@ -183,35 +204,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addToWishlist = async (productId: string) => {
-    if (!token || !user) return;
-    
-    // Optimistic UI update
+    // 1. Get the most recent token directly from storage to avoid "stale" state
+    const activeToken = localStorage.getItem("token");
+    if (!activeToken || !user) {
+      console.error("No active session found");
+      return;
+    }
+
+    // Save the previous state in case we need to roll back
+    const previousWishlist = [...user.wishlist];
+
+    // 2. Optimistic UI update
     setUser((prev) => {
-      if (!prev) return prev;
-      if (prev.wishlist.includes(productId)) return prev;
-      return { ...prev, wishlist: [...prev.wishlist, productId] };
+      if (!prev || prev.wishlist.includes(productId)) return prev;
+      const newWishlist = [...prev.wishlist, productId];
+      return { ...prev, wishlist: newWishlist };
     });
 
     try {
+      // 3. Ensure the URL matches your backend requirements.
+      // If your backend wants the user ID in the URL, use user._id or user.uid
       await axios.post(
         `${API_BASE}/api/users/wishlist/${productId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } },
+        {
+          headers: {
+            Authorization: `Bearer ${activeToken}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
+
       await refreshUserProfile();
     } catch (error) {
       console.error("Failed to add to wishlist", error);
-      // We could revert the optimistic update here if desired
+
+      // 4. Rollback: If the server call fails, remove the item from UI
+      setUser((prev) =>
+        prev ? { ...prev, wishlist: previousWishlist } : prev,
+      );
+
+      // Alert the user so they know it didn't save
+      alert("Session expired. Please log in again.");
     }
   };
-
   const removeFromWishlist = async (productId: string) => {
     if (!token || !user) return;
-    
+
     // Optimistic UI update
     setUser((prev) => {
       if (!prev) return prev;
-      return { ...prev, wishlist: prev.wishlist.filter((id: any) => (typeof id === 'string' ? id : id._id) !== productId) };
+      const newWishlist = prev.wishlist.filter(
+        (id: any) => (typeof id === "string" ? id : id._id) !== productId,
+      );
+      if (firebaseUser) {
+        const ids = newWishlist.map((id: any) =>
+          typeof id === "string" ? id : id._id,
+        );
+        localStorage.setItem(
+          `wishlist_${firebaseUser.uid}`,
+          JSON.stringify(ids),
+        );
+      }
+      return { ...prev, wishlist: newWishlist };
     });
 
     try {
