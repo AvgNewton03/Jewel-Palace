@@ -207,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // 1. Get the most recent token directly from storage to avoid "stale" state
     let activeToken = localStorage.getItem("token");
     if (auth.currentUser) {
-      activeToken = await auth.currentUser.getIdToken(true);
+      activeToken = await auth.currentUser.getIdToken();
     }
     
     if (!activeToken || !user) {
@@ -255,7 +255,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const removeFromWishlist = async (productId: string) => {
     let activeToken = localStorage.getItem("token");
     if (auth.currentUser) {
-      activeToken = await auth.currentUser.getIdToken(true);
+      activeToken = await auth.currentUser.getIdToken();
     }
     
     if (!activeToken || !user) {
