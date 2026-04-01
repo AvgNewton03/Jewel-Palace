@@ -106,15 +106,16 @@ export default function CollectionsPage() {
   const sortedProducts = useMemo(() => {
     let result = [...products];
 
-    // Helper to safely check inclusion against string or array
+    // Helper to safely check inclusion against string or array (Case Insensitive)
     const includesAny = (fieldValue: string | string[] | undefined, selectedFilters: string[]): boolean => {
       if (!fieldValue) return false;
       const values = Array.isArray(fieldValue) ? fieldValue : [fieldValue];
       return selectedFilters.some(filter => {
+        const filterLower = filter.toLowerCase();
         if (filter === "Bangles & Bracelets") {
-          return values.includes("Bracelets") || values.includes("Bangles");
+          return values.some(v => v.toLowerCase() === "bracelets" || v.toLowerCase() === "bangles");
         }
-        return values.includes(filter);
+        return values.some(v => v.toLowerCase() === filterLower);
       });
     };
 

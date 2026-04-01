@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Search, Menu, User, X } from 'lucide-react';
+import { ShoppingBag, Menu, User, X } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -51,10 +51,6 @@ export default function Navbar() {
 
           {/* User & Cart Icons */}
           <div className="flex items-center justify-end space-x-2 sm:space-x-4">
-            <Link href="/collections" className="text-gray-900 hover:text-brand-maroon transition-colors p-2 hidden sm:block">
-              <span className="sr-only">Search</span>
-              <Search className="h-5 w-5" />
-            </Link>
             {(user || firebaseUser) ? (
               <Link href="/account" className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
                 <span className="sr-only">Account</span>

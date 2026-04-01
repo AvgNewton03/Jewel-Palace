@@ -83,12 +83,14 @@ export default function CustomerGallery() {
   // Filter products by category and search query
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesCategory =
-        selectedCategory === "All" || product.category === selectedCategory;
+      let matchesCategory = selectedCategory === "All";
+      
+      if (!matchesCategory && product.category) {
+        const productCats = Array.isArray(product.category) ? product.category : [product.category];
+        matchesCategory = productCats.some(c => c.toLowerCase() === selectedCategory.toLowerCase());
+      }
 
-      const matchesSearch = product.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const matchesSearch = !searchQuery || (product.title && product.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
       return matchesCategory && matchesSearch;
     });
