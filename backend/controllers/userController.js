@@ -34,6 +34,8 @@ export const syncUser = async (req, res) => {
       }
     }
 
+    await user.populate("wishlist");
+
     res.json({
       _id: user._id,
       name: user.name,
