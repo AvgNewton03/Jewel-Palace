@@ -3,10 +3,10 @@
 import { useAuth } from "@/context/AuthContext";
 
 export function useRequireAuth() {
-  const { user, openAuthModal } = useAuth();
+  const { user, firebaseUser, openAuthModal } = useAuth();
 
   const requireAuth = (action: () => void) => {
-    if (!user) {
+    if (!user && !firebaseUser) {
       openAuthModal(action); // Pass the action to be resumed after login
     } else {
       action(); // User is logged in, execute immediately

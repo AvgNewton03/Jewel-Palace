@@ -7,15 +7,15 @@ import { LogOut, MapPin, Package, Heart } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 
 export default function AccountPage() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, firebaseUser, logout, isLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("wishlist");
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && !firebaseUser) {
       router.push("/login");
     }
-  }, [user, isLoading, router]);
+  }, [user, firebaseUser, isLoading, router]);
 
   if (isLoading || !user) {
     return (

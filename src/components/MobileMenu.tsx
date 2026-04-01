@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function MobileMenu() {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useUI();
-  const { user, openAuthModal } = useAuth();
+  const { user, firebaseUser, openAuthModal } = useAuth();
   const pathname = usePathname();
 
   if (pathname?.startsWith('/admin')) return null;
@@ -46,7 +46,7 @@ export default function MobileMenu() {
           <Link href="/collections?type=casual" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Casual</Link>
           <Link href="/store" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Store</Link>
           <div className="pt-4 mt-2 border-t border-gray-100">
-            {user ? (
+            {(user || firebaseUser) ? (
               <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">My Account</Link>
             ) : (
               <button 
