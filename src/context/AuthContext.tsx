@@ -205,7 +205,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const addToWishlist = async (productId: string) => {
     // 1. Get the most recent token directly from storage to avoid "stale" state
-    const activeToken = localStorage.getItem("token");
+    let activeToken = localStorage.getItem("token");
+    if (auth.currentUser) {
+      activeToken = await auth.currentUser.getIdToken(true);
+    }
+    
     if (!activeToken || !user) {
       console.error("No active session found");
       return;
@@ -249,7 +253,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   const removeFromWishlist = async (productId: string) => {
-    if (!token || !user) return;
+    let activeToken = localStorage.getItem("token");
+    if (auth.currentUser) {
+      activeToken = await auth.currentUser.getIdToken(true);
+    }
+    
+    if (!activeToken || !user) {
+      console.error("No active session found");
+      return;
+    }
 
     // Optimistic UI update
     setUser((prev) => {
@@ -271,7 +283,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await axios.delete(`${API_BASE}/api/users/wishlist/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${activeToken}` },
       });
       await refreshUserProfile();
     } catch (error) {
