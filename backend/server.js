@@ -16,7 +16,25 @@ import userRoutes from "./routes/userRoutes.js";
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://jewel-palace-git-main-deepams-projects-8c8329c1.vercel.app",
+  "https://jewel-palace.vercel.app" // Add custom vercel domain if you have one
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Routes

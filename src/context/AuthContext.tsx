@@ -9,7 +9,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 import {
   onAuthStateChanged,
   User as FirebaseUser,
@@ -49,9 +49,6 @@ declare global {
   }
 }
 
-// Define API_BASE outside the component so it's globally available
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -71,15 +68,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // CHANGED: axios.get is now axios.post, and we added {} as the empty body
-      const response = await axios.post(
-        `${API_BASE}/api/users/sync`,
+      // We explicitly pass the token because sync is often the FIRST call and localStorage might not be populated
+      const response = await api.post(
+        `/api/users/sync`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${currentToken}` } }
       );
 
       // Update the user state with data from the backend!
@@ -170,11 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [syncWithBackend]);
 
   const refreshUserProfile = async () => {
-    if (!token) return;
     try {
-      const { data } = await axios.get(`${API_BASE}/api/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get(`/api/users/profile`);
       if (data) {
         setUser(data);
         if (firebaseUser) {
@@ -204,21 +194,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addToWishlist = async (productId: string) => {
-    // 1. Get the most recent token directly from storage to avoid "stale" state
-    let activeToken = localStorage.getItem("token");
-    if (auth.currentUser) {
-      activeToken = await auth.currentUser.getIdToken();
-    }
-    
-    if (!activeToken || !user) {
-      console.error("No active session found");
+    if (!user) {
+      console.warn("User must be logged in to modify wishlist.");
       return;
     }
 
     // Save the previous state in case we need to roll back
     const previousWishlist = [...user.wishlist];
 
-    // 2. Optimistic UI update
+    // Optimistic UI update
     setUser((prev) => {
       if (!prev || prev.wishlist.includes(productId)) return prev;
       const newWishlist = [...prev.wishlist, productId];
@@ -226,40 +210,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     try {
-      // 3. Ensure the URL matches your backend requirements.
-      // If your backend wants the user ID in the URL, use user._id or user.uid
-      await axios.post(
-        `${API_BASE}/api/users/wishlist/${productId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${activeToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
+      // Axios call directly goes out with interceptor magic handling the token
+      await api.post(`/api/users/wishlist/${productId}`);
       await refreshUserProfile();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add to wishlist", error);
 
-      // 4. Rollback: If the server call fails, remove the item from UI
+      // Rollback: If the server call fails, remove the item from UI
       setUser((prev) =>
         prev ? { ...prev, wishlist: previousWishlist } : prev,
       );
 
-      // Alert the user so they know it didn't save
-      alert("Session expired. Please log in again.");
+      // Only alert "Session Expired" if the user actually received a 401
+      if (error.response && error.response.status === 401) {
+        alert("Session expired. Please log in again.");
+      } else {
+        alert("Network error. Could not save to wishlist.");
+      }
     }
   };
   const removeFromWishlist = async (productId: string) => {
-    let activeToken = localStorage.getItem("token");
-    if (auth.currentUser) {
-      activeToken = await auth.currentUser.getIdToken();
-    }
-    
-    if (!activeToken || !user) {
-      console.error("No active session found");
+    if (!user) {
+      console.warn("User must be logged in to modify wishlist.");
       return;
     }
 
@@ -282,13 +254,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     try {
-      await axios.delete(`${API_BASE}/api/users/wishlist/${productId}`, {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
+      await api.delete(`/api/users/wishlist/${productId}`);
       await refreshUserProfile();
     } catch (error) {
       console.error("Failed to remove from wishlist", error);
-      // We could revert the optimistic update here if desired
     }
   };
 
