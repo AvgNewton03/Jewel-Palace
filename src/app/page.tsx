@@ -132,8 +132,8 @@ export default function Home() {
       {/* Trending Products */}
       <section className="py-20 bg-brand-maroon/5 border-y border-brand-maroon/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-            <div>
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 text-center md:text-left">
+            <div className="flex flex-col items-center md:items-start">
               <div className="flex items-center gap-2 text-brand-maroon mb-2">
                 <Sparkles className="h-5 w-5" />
                 <span className="font-semibold uppercase tracking-wider text-sm">Trending Now</span>
