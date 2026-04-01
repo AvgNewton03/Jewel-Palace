@@ -133,6 +133,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Failed to sync user with backend", error);
         } finally {
           setIsLoading(false);
+          // Force a fallback user if backend sync failed (e.g. CORS or network error)
+          setUser((prev) => {
+            if (!prev && currentUser) {
+              return {
+                _id: currentUser.uid,
+                name: currentUser.displayName || "User",
+                email: currentUser.email || "",
+                role: "customer",
+                wishlist: [],
+                addresses: [],
+              };
+            }
+            return prev;
+          });
         }
       } else {
         setToken(null);
@@ -170,6 +184,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const addToWishlist = async (productId: string) => {
     if (!token || !user) return;
+    
+    // Optimistic UI update
+    setUser((prev) => {
+      if (!prev) return prev;
+      if (prev.wishlist.includes(productId)) return prev;
+      return { ...prev, wishlist: [...prev.wishlist, productId] };
+    });
+
     try {
       await axios.post(
         `${API_BASE}/api/users/wishlist/${productId}`,
@@ -179,11 +201,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await refreshUserProfile();
     } catch (error) {
       console.error("Failed to add to wishlist", error);
+      // We could revert the optimistic update here if desired
     }
   };
 
   const removeFromWishlist = async (productId: string) => {
     if (!token || !user) return;
+    
+    // Optimistic UI update
+    setUser((prev) => {
+      if (!prev) return prev;
+      return { ...prev, wishlist: prev.wishlist.filter((id: any) => (typeof id === 'string' ? id : id._id) !== productId) };
+    });
+
     try {
       await axios.delete(`${API_BASE}/api/users/wishlist/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -191,6 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await refreshUserProfile();
     } catch (error) {
       console.error("Failed to remove from wishlist", error);
+      // We could revert the optimistic update here if desired
     }
   };
 
