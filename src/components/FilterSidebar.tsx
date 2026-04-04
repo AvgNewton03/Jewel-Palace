@@ -33,11 +33,11 @@ export default function FilterSidebar({
       id: "type",
       name: "Jewellery Type",
       options: [
-        "Necklaces",
-        "Earrings",
-        "Bangles & Bracelets",
-        "Rings",
-        "Sets",
+        'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
+        'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
+        'Borla', 'Killangi', 'Chocker', 'Balli', 'Earcuff', 'Payal', 
+        'West belt', 'Baju band', 'Jooda', 'Damini', 'Sheeshphool', 
+        'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
       ],
     },
     {
@@ -47,13 +47,15 @@ export default function FilterSidebar({
     },
     {
       id: "color",
-      name: "Accent Color",
+      name: "Material",
       options: [
-        "Ruby Red",
-        "Emerald Green",
-        "Sapphire Blue",
-        "Polki/Kundan",
-        "Antique Gold",
+        "American Diamond",
+        "Kundan",
+        "Polki",
+        "Mojonite",
+        "Antique",
+        "Moti",
+        "Oxodized",
       ],
     },
     {

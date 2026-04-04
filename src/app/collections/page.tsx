@@ -112,9 +112,6 @@ export default function CollectionsPage() {
       const values = Array.isArray(fieldValue) ? fieldValue : [fieldValue];
       return selectedFilters.some(filter => {
         const filterLower = filter.toLowerCase();
-        if (filter === "Bangles & Bracelets") {
-          return values.some(v => v.toLowerCase() === "bracelets" || v.toLowerCase() === "bangles");
-        }
         return values.some(v => v.toLowerCase() === filterLower);
       });
     };

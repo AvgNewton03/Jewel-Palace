@@ -13,16 +13,17 @@ interface Product {
   category: string;
   imageUrl: string;
   isVisible: boolean;
+  productColor?: string[];
   description?: string;
 }
 
 const CATEGORIES = [
   "All",
-  "Necklaces",
-  "Earrings",
-  "Bracelets",
-  "Rings",
-  "Sets",
+  'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
+  'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
+  'Borla', 'Killangi', 'Chocker', 'Balli', 'Earcuff', 'Payal', 
+  'West belt', 'Baju band', 'Jooda', 'Damini', 'Sheeshphool', 
+  'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
 ];
 
 // Utility to add Cloudinary optimizations
@@ -279,6 +280,13 @@ export default function CustomerGallery() {
                   {selectedProduct.description ||
                     "Experience the epitome of elegance with this beautifully crafted piece. Designed to add a touch of royal grandeur to your ensemble, it features intricate detailing and a flawless finish that shines in any light."}
                 </p>
+                
+                {selectedProduct.productColor && selectedProduct.productColor.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-900 mr-2">Color:</span>
+                    <span className="capitalize">{selectedProduct.productColor.join(", ")}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">

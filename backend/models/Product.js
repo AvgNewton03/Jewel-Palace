@@ -37,6 +37,10 @@ const ProductSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  productColor: {
+    type: [String],
+    default: [],
+  },
   isVisible: {
     type: Boolean,
     default: true,

@@ -8,9 +8,10 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [categories, setCategories] = useState<string[]>(['Necklaces']);
+  const [categories, setCategories] = useState<string[]>(['Necklace set']);
   const [occasions, setOccasions] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
+  const [productColors, setProductColors] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -32,6 +33,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
     formData.append('category', JSON.stringify(categories));
     formData.append('occasion', JSON.stringify(occasions));
     formData.append('color', JSON.stringify(colors));
+    formData.append('productColor', JSON.stringify(productColors));
     files.forEach(f => formData.append('media', f));
 
     try {
@@ -57,6 +59,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
       setCategories(['Necklaces']);
       setOccasions([]);
       setColors([]);
+      setProductColors([]);
       setFiles([]);
       
       // Reset input type file
@@ -76,7 +79,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div className="w-full max-w-xl mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
       <h2 className="text-2xl font-bold mb-6 text-gray-900 tracking-tight">Add Product</h2>
       
       {message && (
@@ -140,8 +143,14 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Categories</label>
-          <div className="grid grid-cols-2 gap-2">
-            {['Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Sets', 'Other'].map((cat) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
+              'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
+              'Borla', 'Killangi', 'Chocker', 'Balli', 'Earcuff', 'Payal', 
+              'West belt', 'Baju band', 'Jooda', 'Damini', 'Sheeshphool', 
+              'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
+            ].map((cat) => (
               <label key={cat} className="flex items-center space-x-2 text-sm text-gray-700">
                 <input
                   type="checkbox"
@@ -181,9 +190,9 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Accent Color</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Material</label>
           <div className="grid grid-cols-2 gap-2">
-            {['Ruby Red', 'Emerald Green', 'Sapphire Blue', 'Polki/Kundan', 'Antique Gold'].map((col) => (
+            {['American Diamond', 'Kundan', 'Polki', 'Mojonite', 'Antique', 'Moti', 'Oxodized'].map((col) => (
               <label key={col} className="flex items-center space-x-2 text-sm text-gray-700">
                 <input
                   type="checkbox"
@@ -191,6 +200,27 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
                   onChange={(e) => {
                     if (e.target.checked) setColors([...colors, col]);
                     else setColors(colors.filter((c) => c !== col));
+                  }}
+                  className="rounded border-gray-300 text-black focus:ring-black"
+                  disabled={isLoading}
+                />
+                <span>{col}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Color (Optional)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {['Pink', 'Green', 'Blue', 'Mint Pink', 'Mint Green', 'Black', 'Purple'].map((col) => (
+              <label key={col} className="flex items-center space-x-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={productColors.includes(col)}
+                  onChange={(e) => {
+                    if (e.target.checked) setProductColors([...productColors, col]);
+                    else setProductColors(productColors.filter((c) => c !== col));
                   }}
                   className="rounded border-gray-300 text-black focus:ring-black"
                   disabled={isLoading}

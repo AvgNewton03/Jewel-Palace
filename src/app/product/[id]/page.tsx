@@ -24,6 +24,7 @@ interface Product {
   category: string[];
   occasion: string[];
   color: string[];
+  productColor?: string[];
   imageUrl: string;
   media?: MediaItem[];
 }
@@ -223,9 +224,22 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
 
             {product.color && product.color.length > 0 && (
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Accent Colors</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Material</h4>
                 <div className="flex gap-2 text-sm text-gray-600">
                   {product.color.join(", ")}
+                </div>
+              </div>
+            )}
+
+            {product.productColor && product.productColor.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Color</h4>
+                <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                  {product.productColor.map(color => (
+                    <span key={color} className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-full lowercase first-letter:uppercase">
+                      {color}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}

@@ -61,7 +61,7 @@ router.use(protect);
 // POST route /api/products/add
 router.post("/add", upload.array("media", 10), async (req, res) => {
   try {
-    const { title, price, description, category, occasion, color } = req.body;
+    const { title, price, description, category, occasion, color, productColor } = req.body;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "At least one media file is required." });
@@ -87,6 +87,7 @@ router.post("/add", upload.array("media", 10), async (req, res) => {
     const parsedCategory = parseArrayField(category);
     const parsedOccasion = parseArrayField(occasion);
     const parsedColor = parseArrayField(color);
+    const parsedProductColor = parseArrayField(productColor);
 
     const newProduct = new Product({
       title,
@@ -95,6 +96,7 @@ router.post("/add", upload.array("media", 10), async (req, res) => {
       category: parsedCategory.length > 0 ? parsedCategory : ["Uncategorized"],
       occasion: parsedOccasion,
       color: parsedColor,
+      productColor: parsedProductColor,
       imageUrl: uploadedMedia[0].url, // Fallback for components expecting a single primary image
       media: uploadedMedia,
     });
@@ -127,6 +129,7 @@ router.put("/:id", async (req, res) => {
       if (req.body.category) product.category = parseArrayField(req.body.category);
       if (req.body.occasion) product.occasion = parseArrayField(req.body.occasion);
       if (req.body.color) product.color = parseArrayField(req.body.color);
+      if (req.body.productColor) product.productColor = parseArrayField(req.body.productColor);
 
       if (req.body.isVisible !== undefined) {
         product.isVisible = req.body.isVisible;
