@@ -27,6 +27,13 @@ export default function FilterSidebar({
   onClear = () => {},
 }: FilterSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['type', 'occasion', 'color', 'price']);
+
+  const toggleCategory = (id: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
 
   const filterCategories = [
     {
@@ -126,13 +133,17 @@ export default function FilterSidebar({
                 key={category.id}
                 className="border-b border-gray-100 pb-6 last:border-0 last:pb-0"
               >
-                <button className="flex items-center justify-between w-full mb-3 group">
+                <button 
+                  onClick={() => toggleCategory(category.id)}
+                  className="flex items-center justify-between w-full mb-3 group outline-none"
+                >
                   <h3 className="font-medium text-sm tracking-wide uppercase text-gray-900 group-hover:text-brand-maroon transition-colors">
                     {category.name}
                   </h3>
-                  <ChevronDown className="h-4 w-4 text-gray-400 group-hover:text-brand-maroon transition-colors" />
+                  <ChevronDown className={`h-4 w-4 text-gray-400 group-hover:text-brand-maroon transition-transform duration-200 ${expandedCategories.includes(category.id) ? 'rotate-180' : ''}`} />
                 </button>
-                <div className="space-y-2 mt-3">
+                {expandedCategories.includes(category.id) && (
+                <div className={`space-y-2 mt-3 ${category.id === 'type' ? 'max-h-60 overflow-y-auto pr-2' : ''}`}>
                   {category.options.map((option, idx) => (
                     <label
                       key={idx}
@@ -182,6 +193,7 @@ export default function FilterSidebar({
                     </label>
                   ))}
                 </div>
+                )}
               </div>
             ))}
           </div>

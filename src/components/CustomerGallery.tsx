@@ -26,6 +26,15 @@ const CATEGORIES = [
   'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
 ];
 
+const POPULAR_CATEGORIES = [
+  "All",
+  "Necklace set",
+  "Earrings",
+  "Ring",
+  "Bangle",
+  "Mangalsutra"
+];
+
 // Utility to add Cloudinary optimizations
 const optimizeImageUrl = (url: string) => {
   if (!url) return "";
@@ -108,7 +117,7 @@ export default function CustomerGallery() {
 
   const handleOrderWhatsApp = (product: Product) => {
     const phoneNumber = "919876543210";
-    const message = `Hi, I am interested in ${product.title} - ${formatPrice(product.price)}.`;
+    const message = `Hi Jewel Palace Borivali, I am interested in ${product.title} - ${formatPrice(product.price)}.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -141,11 +150,11 @@ export default function CustomerGallery() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
           {/* Categories */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-4">
-            {CATEGORIES.map((cat) => (
+            {POPULAR_CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2 rounded-full text-sm uppercase tracking-wider transition-colors border ${
+                className={`px-5 py-2 md:px-6 rounded-full text-sm uppercase tracking-wider transition-colors border ${
                   selectedCategory === cat
                     ? "bg-brand-maroon text-white border-brand-maroon"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
@@ -154,6 +163,28 @@ export default function CustomerGallery() {
                 {cat}
               </button>
             ))}
+            
+            <div className="relative">
+              <select
+                value={POPULAR_CATEGORIES.includes(selectedCategory) ? "" : selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className={`px-5 py-2 pr-10 md:px-6 md:pr-10 rounded-full text-sm uppercase tracking-wider transition-colors border outline-none appearance-none cursor-pointer ${
+                  !POPULAR_CATEGORIES.includes(selectedCategory) && selectedCategory !== ""
+                    ? "bg-brand-maroon text-white border-brand-maroon"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <option value="" disabled>More Options</option>
+                {CATEGORIES.filter(c => !POPULAR_CATEGORIES.includes(c)).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 ${!POPULAR_CATEGORIES.includes(selectedCategory) && selectedCategory !== "" ? 'text-white' : 'text-gray-600'}`}>
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Search Bar */}

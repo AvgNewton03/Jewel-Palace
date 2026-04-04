@@ -258,7 +258,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                 <button 
                   onClick={() => {
                     requireAuth(() => {
-                      window.open(`https://wa.me/919029923215?text=Hi! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                      window.open(`https://wa.me/919029923215?text=Hi Jewel Palace Borivali! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
                     });
                   }}
                   className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
@@ -269,7 +269,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                 <button 
                   onClick={() => {
                     requireAuth(() => {
-                      window.open(`https://wa.me/919029923215?text=Hi! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                      window.open(`https://wa.me/919029923215?text=Hi Jewel Palace Borivali! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
                     });
                   }}
                   className="bg-brand-gold/10 text-brand-maroon border border-brand-gold/50 font-medium py-3.5 rounded hover:bg-brand-gold/20 transition-all flex justify-center items-center gap-2"

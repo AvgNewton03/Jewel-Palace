@@ -21,7 +21,7 @@ export default function CartDrawer() {
     requireAuth(() => {
       // Build the order summary text
       let message =
-        "Hi, I would like to place an order for the following items:\n\n";
+        "Hi Jewel Palace Borivali, I would like to place an order for the following items:\n\n";
       cart.forEach((item, index) => {
         message += `${index + 1}. ${item.title}\n`;
         message += `   Quantity: ${item.quantity}\n`;
