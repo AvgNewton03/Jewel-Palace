@@ -15,28 +15,8 @@ export default function CartDrawer() {
 
   if (!isCartOpen) return null;
 
-  const handleCheckoutWhatsApp = () => {
-    if (cart.length === 0) return;
-
-    requireAuth(() => {
-      // Build the order summary text
-      let message =
-        "Hi Jewel Palace Borivali, I would like to place an order for the following items:\n\n";
-      cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.title}\n`;
-        message += `   Quantity: ${item.quantity}\n`;
-        message += `   Price: ₹${item.price.toLocaleString("en-IN")}\n\n`;
-      });
-
-      message += `*Grand Total: ₹${cartTotal.toLocaleString("en-IN")}*\n\n`;
-      message += "Please let me know the next steps for payment and shipping.";
-
-      const phoneNumber = "919029923215"; // Replace with store owner's number
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-      window.open(whatsappUrl, "_blank");
-      setIsCartOpen(false); // Optionally close cart after redirect
-    });
+  const handleProceedToCheckout = () => {
+    setIsCartOpen(false);
   };
 
   return (
@@ -155,7 +135,7 @@ export default function CartDrawer() {
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="text-brand-emerald">
-                  Calculated on WhatsApp
+                  Calculated at Checkout
                 </span>
               </div>
               <div className="border-t border-gray-100 pt-3 flex justify-between font-medium text-lg text-gray-900 mt-2">
@@ -167,14 +147,15 @@ export default function CartDrawer() {
             </div>
 
             <div className="space-y-3">
-              <button
-                onClick={handleCheckoutWhatsApp}
-                className="w-full bg-[#25D366] text-white py-3.5 rounded-lg flex justify-center items-center gap-2 font-medium hover:bg-[#128C7E] hover:shadow-lg transition-all"
+              <Link
+                href="/checkout"
+                onClick={handleProceedToCheckout}
+                className="w-full bg-brand-maroon text-white py-3.5 rounded-lg flex justify-center items-center gap-2 font-medium hover:bg-brand-maroon/90 hover:shadow-lg transition-all"
               >
-                Checkout on WhatsApp <ArrowRight className="h-4 w-4" />
-              </button>
+                Proceed to Checkout <ArrowRight className="h-4 w-4" />
+              </Link>
               <p className="text-xs text-center text-gray-500 mt-3 pt-2">
-                Complete your order securely via WhatsApp.
+                Complete your order securely with Razorpay.
               </p>
             </div>
           </div>

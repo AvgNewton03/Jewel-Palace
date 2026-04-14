@@ -264,7 +264,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                   className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
                 >
                   <MessageCircle className="h-5 w-5" />
-                  Order on WhatsApp
+                  Enquire on WhatsApp
                 </button>
                 <button 
                   onClick={() => {

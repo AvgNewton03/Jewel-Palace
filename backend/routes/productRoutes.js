@@ -61,10 +61,20 @@ router.use(protect);
 // POST route /api/products/add
 router.post("/add", upload.array("media", 10), async (req, res) => {
   try {
-    const { title, price, description, category, occasion, color, productColor } = req.body;
+    const {
+      title,
+      price,
+      description,
+      category,
+      occasion,
+      color,
+      productColor,
+    } = req.body;
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "At least one media file is required." });
+      return res
+        .status(400)
+        .json({ error: "At least one media file is required." });
     }
 
     const uploadPromises = req.files.map(async (file) => {
@@ -78,7 +88,7 @@ router.post("/add", upload.array("media", 10), async (req, res) => {
 
       return {
         url: uploadResponse.secure_url,
-        mediaType: uploadResponse.resource_type === 'video' ? 'video' : 'image'
+        mediaType: uploadResponse.resource_type === "video" ? "video" : "image",
       };
     });
 
@@ -92,7 +102,7 @@ router.post("/add", upload.array("media", 10), async (req, res) => {
     const newProduct = new Product({
       title,
       price: Number(price),
-      description: description || '',
+      description: description || "",
       category: parsedCategory.length > 0 ? parsedCategory : ["Uncategorized"],
       occasion: parsedOccasion,
       color: parsedColor,
@@ -121,15 +131,18 @@ router.put("/:id", async (req, res) => {
     if (product) {
       product.title = req.body.title || product.title;
       product.price = req.body.price || product.price;
-      
+
       if (req.body.description !== undefined) {
         product.description = req.body.description;
       }
 
-      if (req.body.category) product.category = parseArrayField(req.body.category);
-      if (req.body.occasion) product.occasion = parseArrayField(req.body.occasion);
+      if (req.body.category)
+        product.category = parseArrayField(req.body.category);
+      if (req.body.occasion)
+        product.occasion = parseArrayField(req.body.occasion);
       if (req.body.color) product.color = parseArrayField(req.body.color);
-      if (req.body.productColor) product.productColor = parseArrayField(req.body.productColor);
+      if (req.body.productColor)
+        product.productColor = parseArrayField(req.body.productColor);
 
       if (req.body.isVisible !== undefined) {
         product.isVisible = req.body.isVisible;
