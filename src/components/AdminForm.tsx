@@ -143,7 +143,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
 
         <div className="bg-gray-50 border border-gray-100 rounded-xl p-5">
           <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Categories</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-3">
+          <div className="grid gap-x-4 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
             {[
               'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
               'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
@@ -168,7 +168,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 border border-gray-100 rounded-xl p-5">
+        <div className="grid gap-6 bg-gray-50 border border-gray-100 rounded-xl p-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
           {/* Occasion */}
           <div>
             <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Occasion</label>
@@ -207,7 +207,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
                     className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
                     disabled={isLoading}
                   />
-                  <span className="group-hover:text-gray-900 transition-colors leading-snug">{col}</span>
+                  <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
                 </label>
               ))}
             </div>
@@ -229,7 +229,7 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
                     className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
                     disabled={isLoading}
                   />
-                  <span className="group-hover:text-gray-900 transition-colors leading-snug">{col}</span>
+                  <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
                 </label>
               ))}
             </div>
