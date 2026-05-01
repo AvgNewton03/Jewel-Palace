@@ -174,7 +174,7 @@ export default function Home() {
             <span className="italic text-brand-gold">Royal Elegance</span>
           </h1>
           <p className="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light leading-relaxed hidden sm:block">
-            Discover our festive & vibrant pieces meticulously crafted to bring out the palace queen in you.
+            Discover our festive & vibrant pieces meticulously crafted to bring out the queen in you.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
