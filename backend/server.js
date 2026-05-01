@@ -14,6 +14,7 @@ import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/orders", orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;

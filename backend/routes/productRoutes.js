@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 import { protect } from "../middleware/authMiddleware.js";
 import dotenv from "dotenv";
 
@@ -52,6 +53,38 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching product:", error);
     res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
+// GET /api/products/admin/most-wishlisted - Analytics
+router.get("/admin/most-wishlisted", async (req, res) => {
+  try {
+    const wishlisted = await User.aggregate([
+      { $unwind: "$wishlist" },
+      { $group: { _id: "$wishlist", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 20 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" }
+    ]);
+
+    res.json(wishlisted.map(w => ({
+      _id: w._id,
+      count: w.count,
+      title: w.productDetails.title,
+      price: w.productDetails.price,
+      imageUrl: w.productDetails.imageUrl
+    })));
+  } catch (error) {
+    console.error("Error fetching wishlist analytics:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
   }
 });
 

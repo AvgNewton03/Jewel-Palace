@@ -27,7 +27,7 @@ export default function FilterSidebar({
   onClear = () => {},
 }: FilterSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['type', 'occasion', 'color', 'price']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   const toggleCategory = (id: string) => {
     setExpandedCategories(prev => 
