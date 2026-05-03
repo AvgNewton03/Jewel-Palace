@@ -1,20 +1,25 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import path from 'path';
-import fs from 'fs';
 
 export const initAdmin = () => {
   if (!getApps().length) {
     try {
-      const serviceAccountPath = path.join(process.cwd(), 'jewelpalace-firebase-adminsdk-fbsvc-4f98306e5f.json');
-      if (fs.existsSync(serviceAccountPath)) {
-        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-        initializeApp({
-          credential: cert(serviceAccount),
-        });
-        console.log('Firebase Admin Initialized successfully.');
-      } else {
-        console.warn('Firebase Admin SDK service account key not found at path:', serviceAccountPath);
+      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        console.warn('FIREBASE_SERVICE_ACCOUNT_KEY is not set in environment variables.');
+        return;
       }
+      
+      // Parse the JSON string from the environment variable
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      
+      // Ensure the private key is formatted correctly (Vercel often escapes newlines)
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+
+      initializeApp({
+        credential: cert(serviceAccount),
+      });
+      console.log('Firebase Admin Initialized successfully using environment variables.');
     } catch (error) {
       console.error('Firebase Admin Initialization Error:', error);
     }
