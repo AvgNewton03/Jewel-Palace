@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 
 export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   const [title, setTitle] = useState('');
@@ -15,6 +15,13 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => 
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,97 +149,134 @@ export default function AdminForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div className="bg-gray-50 border border-gray-100 rounded-xl p-5">
-          <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Categories</label>
-          <div className="grid gap-x-4 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
-            {[
-              'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
-              'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
-              'Borla', 'Killangi', 'Chocker', 'Balli', 'Earcuff', 'Payal', 
-              'West belt', 'Baju band', 'Jooda', 'Damini', 'Sheeshphool', 
-              'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
-            ].map((cat) => (
-              <label key={cat} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={categories.includes(cat)}
-                  onChange={(e) => {
-                    if (e.target.checked) setCategories([...categories, cat]);
-                    else setCategories(categories.filter((c) => c !== cat));
-                  }}
-                  className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
-                  disabled={isLoading}
-                />
-                <span className="group-hover:text-gray-900 transition-colors leading-snug">{cat}</span>
-              </label>
-            ))}
-          </div>
+          <button 
+            type="button" 
+            onClick={() => toggleSection('categories')}
+            className="w-full flex items-center justify-between text-base font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-2 group"
+          >
+            Categories
+            <ChevronDown className={`h-5 w-5 text-gray-400 group-hover:text-brand-maroon transition-transform duration-200 ${expandedSections.includes('categories') ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {expandedSections.includes('categories') && (
+            <div className="grid gap-x-4 gap-y-3 mt-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+              {[
+                'Necklace set', 'Pendent set', 'Bangle', 'Kada', 'Ring', 'Nath', 
+                'Hath pan', 'Mang tika', 'Tops', 'Earrings', 'Mangalsutra', 
+                'Borla', 'Killangi', 'Chocker', 'Balli', 'Earcuff', 'Payal', 
+                'West belt', 'Baju band', 'Jooda', 'Damini', 'Sheeshphool', 
+                'Ghughri', 'Mala', 'Chain', 'Sindoor box', 'Groom mala'
+              ].map((cat) => (
+                <label key={cat} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={categories.includes(cat)}
+                    onChange={(e) => {
+                      if (e.target.checked) setCategories([...categories, cat]);
+                      else setCategories(categories.filter((c) => c !== cat));
+                    }}
+                    className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
+                    disabled={isLoading}
+                  />
+                  <span className="group-hover:text-gray-900 transition-colors leading-snug">{cat}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 bg-gray-50 border border-gray-100 rounded-xl p-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
           {/* Occasion */}
           <div>
-            <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Occasion</label>
-            <div className="flex flex-col gap-3">
-              {['Wedding', 'Heavy Festive', 'Casual', 'Office Wear'].map((occ) => (
-                <label key={occ} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={occasions.includes(occ)}
-                    onChange={(e) => {
-                      if (e.target.checked) setOccasions([...occasions, occ]);
-                      else setOccasions(occasions.filter((o) => o !== occ));
-                    }}
-                    className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
-                    disabled={isLoading}
-                  />
-                  <span className="group-hover:text-gray-900 transition-colors leading-snug">{occ}</span>
-                </label>
-              ))}
-            </div>
+            <button 
+              type="button" 
+              onClick={() => toggleSection('occasion')}
+              className="w-full flex items-center justify-between text-base font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-2 group"
+            >
+              Occasion
+              <ChevronDown className={`h-5 w-5 text-gray-400 group-hover:text-brand-maroon transition-transform duration-200 ${expandedSections.includes('occasion') ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedSections.includes('occasion') && (
+              <div className="flex flex-col gap-3 mt-4">
+                {['Wedding', 'Heavy Festive', 'Casual', 'Office Wear'].map((occ) => (
+                  <label key={occ} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={occasions.includes(occ)}
+                      onChange={(e) => {
+                        if (e.target.checked) setOccasions([...occasions, occ]);
+                        else setOccasions(occasions.filter((o) => o !== occ));
+                      }}
+                      className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
+                      disabled={isLoading}
+                    />
+                    <span className="group-hover:text-gray-900 transition-colors leading-snug">{occ}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Material */}
           <div>
-            <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Material</label>
-            <div className="flex flex-col gap-3">
-              {['American Diamond', 'Kundan', 'Polki', 'Mojonite', 'Antique', 'Moti', 'Oxodized'].map((col) => (
-                <label key={col} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={colors.includes(col)}
-                    onChange={(e) => {
-                      if (e.target.checked) setColors([...colors, col]);
-                      else setColors(colors.filter((c) => c !== col));
-                    }}
-                    className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
-                    disabled={isLoading}
-                  />
-                  <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
-                </label>
-              ))}
-            </div>
+            <button 
+              type="button" 
+              onClick={() => toggleSection('material')}
+              className="w-full flex items-center justify-between text-base font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-2 group"
+            >
+              Material
+              <ChevronDown className={`h-5 w-5 text-gray-400 group-hover:text-brand-maroon transition-transform duration-200 ${expandedSections.includes('material') ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedSections.includes('material') && (
+              <div className="flex flex-col gap-3 mt-4">
+                {['American Diamond', 'Kundan', 'Polki', 'Mojonite', 'Antique', 'Moti', 'Oxodized'].map((col) => (
+                  <label key={col} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={colors.includes(col)}
+                      onChange={(e) => {
+                        if (e.target.checked) setColors([...colors, col]);
+                        else setColors(colors.filter((c) => c !== col));
+                      }}
+                      className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
+                      disabled={isLoading}
+                    />
+                    <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Color */}
           <div>
-            <label className="block text-base font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Color (Optional)</label>
-            <div className="flex flex-col gap-3">
-              {['Pink', 'Green', 'Blue', 'Mint Pink', 'Mint Green', 'Black', 'Purple'].map((col) => (
-                <label key={col} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={productColors.includes(col)}
-                    onChange={(e) => {
-                      if (e.target.checked) setProductColors([...productColors, col]);
-                      else setProductColors(productColors.filter((c) => c !== col));
-                    }}
-                    className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
-                    disabled={isLoading}
-                  />
-                  <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
-                </label>
-              ))}
-            </div>
+            <button 
+              type="button" 
+              onClick={() => toggleSection('color')}
+              className="w-full flex items-center justify-between text-base font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-2 group"
+            >
+              Color (Optional)
+              <ChevronDown className={`h-5 w-5 text-gray-400 group-hover:text-brand-maroon transition-transform duration-200 ${expandedSections.includes('color') ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedSections.includes('color') && (
+              <div className="flex flex-col gap-3 mt-4">
+                {['Pink', 'Green', 'Blue', 'Mint Pink', 'Mint Green', 'Black', 'Purple'].map((col) => (
+                  <label key={col} className="flex items-start space-x-2.5 text-sm text-gray-700 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={productColors.includes(col)}
+                      onChange={(e) => {
+                        if (e.target.checked) setProductColors([...productColors, col]);
+                        else setProductColors(productColors.filter((c) => c !== col));
+                      }}
+                      className="mt-0.5 rounded border-gray-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer w-4 h-4"
+                      disabled={isLoading}
+                    />
+                    <span className="group-hover:text-gray-900 transition-colors leading-snug break-words">{col}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

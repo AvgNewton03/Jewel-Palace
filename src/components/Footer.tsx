@@ -18,7 +18,7 @@ export default function Footer() {
   return (
     <footer className="bg-foreground text-brand-bg">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Col */}
           <div className="col-span-1 md:col-span-1">
             <Link
@@ -123,6 +123,38 @@ export default function Footer() {
                 >
                   praveensipani215@gmail.com
                 </a>
+              </li>
+            </ul>
+          </div>
+          {/* Legal Links */}
+          <div>
+            <h3 className="text-sm font-semibold text-brand-gold uppercase tracking-wider mb-4">
+              Legal
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="/privacy-policy"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-and-conditions"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/shipping-and-refund"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  Shipping & Refund Policy
+                </Link>
               </li>
             </ul>
           </div>

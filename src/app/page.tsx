@@ -274,8 +274,8 @@ export default function Home() {
         <div className={`bg-brand-maroon rounded-2xl overflow-hidden flex flex-col md:flex-row items-center shadow-2xl transition-all duration-1000 ease-out transform ${
           isBannerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-16"
         }`}>
-          <div className="md:w-1/2 relative h-[300px] md:h-full min-h-[400px] w-full">
-            <div className="absolute top-0 bottom-0 left-4 right-4 md:left-8 md:right-8 overflow-hidden bg-brand-maroon/20 group">
+          <div className="w-full md:w-1/2 relative h-[350px] md:h-auto md:self-stretch">
+            <div className="absolute inset-y-0 left-4 right-4 md:left-8 md:right-8 overflow-hidden bg-brand-maroon/20 group">
               {allProducts.length > 0 ? (() => {
                 const currentProduct = allProducts[currentSlideIndex];
                 const occasion = Array.isArray(currentProduct.category) && currentProduct.category.length > 0 
@@ -303,9 +303,9 @@ export default function Home() {
               )}
             </div>
           </div>
-          <div className="md:w-1/2 p-10 md:p-16 flex flex-col justify-center text-white">
-            <h2 className="text-3xl md:text-4xl font-serif mb-6 leading-tight">Authentic Craftsmanship, Flawless Finish.</h2>
-            <p className="text-brand-bg/80 text-lg font-light mb-8 leading-relaxed">
+          <div className="w-full md:w-1/2 p-6 md:p-16 flex flex-col justify-center text-white z-10 relative">
+            <h2 className="text-2xl md:text-4xl font-serif mb-3 md:mb-6 leading-tight">Authentic Craftsmanship, Flawless Finish.</h2>
+            <p className="text-brand-bg/80 text-base md:text-lg font-light mb-6 md:mb-8 leading-relaxed">
               Our master artisans pour their passion into creating imitation jewellery that rivals the real thing. Utilizing premium stones, intricate meenakari, and anti-tarnish gold plating.
             </p>
             <div className="flex gap-4 mb-8">
