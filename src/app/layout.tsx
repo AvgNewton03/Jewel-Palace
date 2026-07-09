@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -22,10 +22,27 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "Jewel Palace | Exquisite Imitation Jewellery",
   description:
     "Discover our festive and vibrant collection of imitation jewellery. Shop wedding, heavy, and casual pieces.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Jewel Palace",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -36,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${montserrat.variable} ${playfair.variable} antialiased min-h-screen flex flex-col relative`}
+        className={`${montserrat.variable} ${playfair.variable} antialiased min-h-dvh flex flex-col relative`}
       >
         <AuthProvider>
           <CartProvider>

@@ -16,7 +16,7 @@ export default function Navbar() {
   if (pathname?.startsWith('/admin')) return null;
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/60 dark:bg-[#150d0a]/55 backdrop-blur-xl border-b border-brand-gold/15 dark:border-brand-gold/10 shadow-sm transition-all duration-300">
+    <nav className="sticky top-0 z-50 w-full bg-white/60 dark:bg-[#150d0a]/55 backdrop-blur-xl border-b border-brand-gold/15 dark:border-brand-gold/10 shadow-sm transition-all duration-300 pt-safe">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Mobile Menu Button */}

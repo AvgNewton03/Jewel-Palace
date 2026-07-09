@@ -30,7 +30,7 @@ export default function CartDrawer() {
       {/* Drawer */}
       <div className="relative w-full max-w-md bg-brand-bg h-full flex flex-col shadow-2xl animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-brand-gold/20 bg-white">
+        <div className="flex items-center justify-between pt-[calc(env(safe-area-inset-top)+1.25rem)] px-5 pb-5 border-b border-brand-gold/20 bg-white">
           <h2 className="font-serif text-xl font-medium flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-brand-maroon" />
             Your Cart ({itemCount})
@@ -124,7 +124,7 @@ export default function CartDrawer() {
 
         {/* Footer / Summary */}
         {cart.length > 0 && (
-          <div className="p-5 border-t border-brand-gold/20 bg-white">
+          <div className="pt-5 px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] border-t border-brand-gold/20 bg-white">
             <div className="space-y-3 mb-5 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>

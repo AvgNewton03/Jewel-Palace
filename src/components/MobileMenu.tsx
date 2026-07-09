@@ -25,7 +25,7 @@ export default function MobileMenu() {
       />
       
       {/* Sliding Menu Panel */}
-      <div className="fixed top-0 left-0 w-4/5 max-w-sm h-full bg-brand-bg shadow-2xl flex flex-col pt-5 pb-6 overflow-y-auto translate-x-0 transition-transform duration-300">
+      <div className="fixed top-0 left-0 w-4/5 max-w-sm h-full bg-brand-bg shadow-2xl flex flex-col pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] overflow-y-auto translate-x-0 transition-transform duration-300">
         <div className="px-4 flex items-center justify-between mb-8">
           <Link href="/" className="font-serif text-xl font-bold text-brand-maroon" onClick={() => setIsMobileMenuOpen(false)}>
             Jewel Palace

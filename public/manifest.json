@@ -1,0 +1,17 @@
+{
+  "name": "Jewel Palace",
+  "short_name": "Jewel Palace",
+  "description": "Discover our festive and vibrant collection of imitation jewellery. Shop wedding, heavy, and casual pieces.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fffbf2",
+  "theme_color": "#800000",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

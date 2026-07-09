@@ -3,12 +3,11 @@ import { NextResponse } from 'next/server';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initAdmin } from '@/lib/firebase-admin';
 
-// Initialize Firebase Admin (Ensures it doesn't re-initialize on every request)
-initAdmin();
-const db = getFirestore();
-
 export async function POST(req: Request) {
   try {
+    initAdmin();
+    const db = getFirestore();
+    
     // 1. Get raw body and signature
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
