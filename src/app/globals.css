@@ -173,5 +173,37 @@
   .dark .bg-brand-emerald {
     background-color: #10b981 !important;
   }
+
+  /* Support for review list opacity classes & alert states in dark mode */
+  .dark *:not(footer):not(footer *) .bg-gray-50\/50 {
+    background-color: rgba(38, 27, 21, 0.4) !important;
+  }
+
+  .dark *:not(footer):not(footer *) .hover\:bg-gray-50\/50:hover {
+    background-color: rgba(38, 27, 21, 0.4) !important;
+  }
+  
+  .dark .bg-green-100,
+  .dark .bg-green-50\/50 {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+  }
+
+  .dark .text-green-700,
+  .dark .text-green-600 {
+    color: #34d399 !important;
+  }
+
+  .dark .bg-red-50\/50 {
+    background-color: rgba(220, 38, 38, 0.15) !important;
+  }
+
+  .dark .text-red-600 {
+    color: #f87171 !important;
+  }
+
+  /* Address card default bg highlight */
+  .dark .bg-\[\#fffdf7\] {
+    background-color: rgba(232, 198, 101, 0.1) !important;
+  }
 }
 

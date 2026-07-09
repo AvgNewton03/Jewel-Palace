@@ -37,8 +37,8 @@ export default function AdminDashboard() {
   if (!isAuthenticated) return null; // Or a loading spinner
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-transparent">
-      <header className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-transparent">
+      <header className="bg-white/60 dark:bg-[#150d0a]/55 backdrop-blur-xl border-b border-gray-200 dark:border-brand-gold/10 shadow-sm sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             Admin Dashboard
