@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jewel Palace ✧ Exquisite Imitation Jewellery
+
+Welcome to **Jewel Palace**, an elegant, high-end e-commerce platform dedicated to offering festive, vibrant, and meticulously crafted imitation jewellery. From royal wedding ensembles and heavy festive wear to lightweight casual pieces, Jewel Palace blends authentic artisan craftsmanship with modern web design.
+
+---
+
+## About Jewel Palace
+
+Jewel Palace is designed to bring out the queen in you. We showcase collections crafted with premium stones, intricate meenakari, and anti-tarnish gold plating. 
+
+Our website provides a premium, immersive shopping experience featuring:
+* **Curated Occasion Categories**: Easily browse and filter jewellery collections designed specifically for weddings, casual outings, or heavy traditional events.
+* **Premium Dark Mode**: Toggle between a bright layout and a luxurious, warm dark espresso-to-black radial gradient theme featuring gold headings and frosted-glass transparency effects.
+* **Seamless Checkout & Cart**: Manage items, quantity, and wishlists effortlessly with a sliding cart drawer and quick-view modals.
+* **Customer Gallery**: A community hub displaying real-world photos and testimonials of customers showcasing our pieces.
+* **Direct Assistance**: Integrated WhatsApp button for instant support from our sales and customer service team.
+* **Admin Control Center**: Built-in dashboard to add new items, monitor orders, publish reviews, and manage inventory.
+
+---
+
+## Technical Stack & Infrastructure
+
+Jewel Palace is built as a modern, full-stack JavaScript application using:
+
+* **Frontend**: [Next.js](https://nextjs.org/) (App Router & React 19) styled with [Tailwind CSS v4](https://tailwindcss.com/) for fluid layouts, customized glassmorphic headers, and smooth transitions.
+* **Icons**: [Lucide React](https://lucide.dev/) for crisp, scalable vectors.
+* **Backend**: Node.js and Express RESTful API server.
+* **Database**: MongoDB (Mongoose ODM) storing product documents, order entries, and review submissions.
+* **Authentication**: Firebase Authentication integrated with Firebase Admin SDK server-side.
+* **Media Cloud**: Cloudinary hosting high-resolution optimized images.
+* **Payment Gateway**: Razorpay webhook-powered payment checkout.
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* Node.js (v18 or higher recommended)
+* MongoDB connection URI
+* Firebase Service Account configuration
+* Cloudinary API keys
+* Razorpay API keys
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Setup Instructions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/AvgNewton03/Jewel-Palace.git
+   cd Jewel-Palace
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Configure Environment Variables**:
+   Create a `.env.local` in the root folder and a `.env` in the `backend` folder containing your MongoDB URIs, Firebase service account credentials, Cloudinary tokens, and Razorpay secrets.
 
-## Learn More
+3. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Launch the Application**:
+   Start both the backend server and Next.js frontend developer compiler simultaneously:
+   ```bash
+   # Terminal 1: Starts Node/Express Server
+   npm run server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   # Terminal 2: Starts Next.js Development Server
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Access Local Server**:
+   Open [http://localhost:3000](http://localhost:3000) in your web browser to explore.
