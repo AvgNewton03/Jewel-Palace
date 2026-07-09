@@ -16,7 +16,7 @@ export default function Footer() {
   if (pathname?.startsWith('/admin')) return null;
 
   return (
-    <footer className="bg-foreground text-brand-bg">
+    <footer className="bg-[#1c1917] text-[#fffbf2] border-t border-brand-gold/10">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Col */}

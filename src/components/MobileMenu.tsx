@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { X, ChevronRight, CheckCircle2, Sun, Moon } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useAuth } from '@/context/AuthContext';
 
 export default function MobileMenu() {
-  const { isMobileMenuOpen, setIsMobileMenuOpen } = useUI();
+  const { isMobileMenuOpen, setIsMobileMenuOpen, theme, toggleTheme } = useUI();
   const { user, firebaseUser, openAuthModal } = useAuth();
   const pathname = usePathname();
 
@@ -30,13 +30,26 @@ export default function MobileMenu() {
           <Link href="/" className="font-serif text-xl font-bold text-brand-maroon" onClick={() => setIsMobileMenuOpen(false)}>
             Jewel Palace
           </Link>
-          <button 
-            onClick={() => setIsMobileMenuOpen(false)} 
-            className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors"
-            aria-label="Close menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors focus:outline-none"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-brand-gold fill-brand-gold/20" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-700" />
+              )}
+            </button>
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         <nav className="px-2 space-y-1">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Home</Link>

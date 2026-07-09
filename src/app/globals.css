@@ -6,25 +6,172 @@
   --font-sans: var(--font-montserrat);
   --font-serif: var(--font-playfair);
   
-  --color-brand-maroon: #800000;
-  --color-brand-emerald: #047857;
-  --color-brand-gold: #d4af37;
-  --color-brand-bg: #fffbf2;
+  --color-brand-maroon: var(--brand-maroon);
+  --color-brand-emerald: var(--brand-emerald);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-bg: var(--brand-bg);
 }
 
 :root {
   --background: #fffbf2;
   --foreground: #1c1917;
+  
+  --brand-maroon: #800000;
+  --brand-emerald: #047857;
+  --brand-gold: #d4af37;
+  --brand-bg: #fffbf2;
+  
+  --card-bg: #ffffff;
+  --card-border: #f3f4f6; /* gray-100 */
+  --text-muted: #4b5563; /* gray-600 */
+  --text-main: #111827; /* gray-900 */
+}
+
+.dark {
+  --background: #0d0907; /* Deep chocolate black */
+  --foreground: #f5f3f0;
+  
+  --brand-maroon: #4a0a0a; /* Deep rich dark maroon */
+  --brand-emerald: #045a42; /* Deep dark emerald */
+  --brand-gold: #e8c665; /* Bright warm gold */
+  --brand-bg: #0d0907;
+  
+  --card-bg: #201712; /* Warm dark chocolate card background */
+  --card-border: #32251d; /* Warm light brown card border */
+  --text-muted: #bab3ab; /* Soft beige descriptions */
+  --text-main: #f5f3f0; /* Near-white headings/main text */
 }
 
 @layer base {
   body {
     background-color: var(--background);
+    background-image: radial-gradient(circle at 50% 30%, #ffffff 0%, #f5ece2 100%);
+    background-attachment: fixed;
     color: var(--foreground);
-    @apply font-sans;
+    @apply font-sans transition-colors duration-300;
+  }
+  
+  .dark body {
+    background-color: var(--background) !important;
+    background-image: radial-gradient(circle at 50% 30%, #281c15 0%, #0d0907 100%) !important;
+    background-attachment: fixed !important;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-brand-maroon;
+    @apply font-serif text-brand-maroon transition-colors duration-300;
+  }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: var(--brand-gold) !important; /* Gold headings on dark mode look incredibly premium! */
+  }
+
+  /* Global dark overrides with footer-exclusion protection */
+  .dark *:not(footer):not(footer *) .bg-white {
+    background-color: var(--card-bg) !important;
+  }
+  
+  .dark *:not(footer):not(footer *) .bg-gray-50,
+  .dark *:not(footer):not(footer *) .bg-gray-100 {
+    background-color: #261b15 !important;
+  }
+
+  .dark *:not(footer):not(footer *) .bg-gray-200 {
+    background-color: #30221a !important;
+  }
+
+  .dark *:not(footer):not(footer *) .text-gray-900 {
+    color: var(--text-main) !important;
+  }
+  
+  .dark *:not(footer):not(footer *) .text-gray-800,
+  .dark *:not(footer):not(footer *) .text-gray-700,
+  .dark *:not(footer):not(footer *) .text-gray-600 {
+    color: var(--text-muted) !important;
+  }
+  
+  .dark *:not(footer):not(footer *) .text-gray-500,
+  .dark *:not(footer):not(footer *) .text-gray-400 {
+    color: #8c857f !important; /* Stone-400 */
+  }
+
+  .dark *:not(footer):not(footer *) .text-gray-300 {
+    color: #a8a29e !important;
+  }
+
+  .dark *:not(footer):not(footer *) .border-gray-100,
+  .dark *:not(footer):not(footer *) .border-gray-200 {
+    border-color: var(--card-border) !important;
+  }
+
+  .dark *:not(footer):not(footer *) .border-gray-300 {
+    border-color: #47362a !important;
+  }
+
+  /* Specific overrides for text-brand-maroon to keep contrast */
+  .dark .text-brand-maroon {
+    color: var(--brand-gold) !important;
+  }
+  .dark .hover\:text-brand-maroon:hover {
+    color: var(--brand-gold) !important;
+  }
+  .dark .border-brand-maroon {
+    border-color: var(--brand-gold) !important;
+  }
+  .dark .hover\:border-brand-maroon:hover {
+    border-color: var(--brand-gold) !important;
+  }
+
+  /* Ensure text inside gold background elements has high contrast (dark burgundy) */
+  .dark .bg-brand-gold,
+  .dark .bg-brand-gold *,
+  .dark a[class*="bg-brand-gold"],
+  .dark button[class*="bg-brand-gold"] {
+    color: #3b0505 !important;
+  }
+
+  /* Ensure text inside brand-maroon backgrounds (like description/features banner) remains readable */
+  .dark .bg-brand-maroon p,
+  .dark .bg-brand-maroon span:not(.text-brand-gold) {
+    color: #fffbf2 !important;
+    opacity: 0.9 !important;
+  }
+
+  /* Specific interactive states overrides */
+  .dark .hover\:bg-brand-gold:hover {
+    background-color: var(--brand-gold) !important;
+    color: #0d0907 !important;
+  }
+  .dark .hover\:bg-white:hover {
+    background-color: #ffffff !important;
+    color: #0d0907 !important;
+  }
+  .dark .hover\:bg-gray-100:hover {
+    background-color: #30221a !important;
+  }
+  .dark .hover\:bg-gray-50:hover {
+    background-color: #261b15 !important;
+  }
+  .dark .hover\:bg-brand-maroon\/5:hover {
+    background-color: rgba(229, 193, 88, 0.1) !important;
+  }
+  
+  /* Inputs / Form controls in dark mode */
+  .dark input, 
+  .dark textarea, 
+  .dark select {
+    background-color: #17100b !important;
+    color: var(--foreground) !important;
+    border-color: var(--card-border) !important;
+  }
+
+  .dark input::placeholder, 
+  .dark textarea::placeholder {
+    color: #8c857f !important;
+  }
+
+  /* Fix for specific badges */
+  .dark .bg-brand-emerald {
+    background-color: #10b981 !important;
   }
 }
+

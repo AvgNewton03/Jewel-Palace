@@ -76,7 +76,7 @@ export default function StoreContactPage() {
                 className="pointer-events-none grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
               />
               <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors flex items-center justify-center">
-                <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-brand-maroon shadow-sm font-medium text-sm flex items-center gap-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="bg-white/90 dark:bg-stone-800/90 backdrop-blur px-4 py-2 rounded-full text-brand-maroon dark:text-brand-gold shadow-sm font-medium text-sm flex items-center gap-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                   <MapPin className="h-4 w-4" />
                   Click to open in Google Maps
                 </div>

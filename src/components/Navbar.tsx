@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Menu, User, X } from 'lucide-react';
+import { ShoppingBag, Menu, User, X, Sun, Moon } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
-  const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen } = useUI();
+  const { isMobileMenuOpen, setIsMobileMenuOpen, setIsCartOpen, theme, toggleTheme } = useUI();
   const { itemCount } = useCart();
   const { user, firebaseUser, openAuthModal } = useAuth();
   const pathname = usePathname();
@@ -16,7 +16,7 @@ export default function Navbar() {
   if (pathname?.startsWith('/admin')) return null;
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-brand-bg/90 backdrop-blur-md border-b border-brand-gold/20 shadow-sm transition-all duration-300">
+    <nav className="sticky top-0 z-50 w-full bg-white/60 dark:bg-[#150d0a]/55 backdrop-blur-xl border-b border-brand-gold/15 dark:border-brand-gold/10 shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Mobile Menu Button */}
@@ -51,6 +51,19 @@ export default function Navbar() {
 
           {/* User & Cart Icons */}
           <div className="flex items-center justify-end space-x-2 sm:space-x-4">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="text-gray-900 hover:text-brand-maroon transition-colors p-2 focus:outline-none"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-brand-gold fill-brand-gold/20" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-700" />
+              )}
+            </button>
+
             {(user || firebaseUser) ? (
               <Link href="/account" className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
                 <span className="sr-only">Account</span>
@@ -72,7 +85,7 @@ export default function Navbar() {
               <span className="sr-only">Cart</span>
               <ShoppingBag className="h-6 w-6" />
               {itemCount > 0 && (
-                <span className="absolute top-1 right-1 bg-brand-maroon text-brand-bg text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 bg-brand-maroon text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
                   {itemCount}
                 </span>
               )}

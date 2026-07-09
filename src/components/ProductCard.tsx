@@ -112,7 +112,7 @@ export default function ProductCard({
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Add to Cart</span>
           </button>
-          <Link href={`/product/${id}`} className="bg-white/90 hover:bg-white text-gray-900 p-2.5 rounded transition-colors tooltip flex items-center justify-center" aria-label="Quick View">
+          <Link href={`/product/${id}`} className="bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-700 text-gray-900 dark:text-stone-100 p-2.5 rounded transition-colors tooltip flex items-center justify-center" aria-label="Quick View">
             <Eye className="h-4 w-4" />
           </Link>
         </div>
