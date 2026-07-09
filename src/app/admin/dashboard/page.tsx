@@ -37,11 +37,11 @@ export default function AdminDashboard() {
   if (!isAuthenticated) return null; // Or a loading spinner
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-transparent">
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Jewelry Manager Dashboard
+            Admin Dashboard
           </h1>
           <button
             onClick={handleLogout}
@@ -62,8 +62,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab('products')}
               className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'products'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-black text-black dark:border-brand-gold dark:text-brand-gold'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
               <Package className="h-5 w-5" />
@@ -73,8 +73,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab('reviews')}
               className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'reviews'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-black text-black dark:border-brand-gold dark:text-brand-gold'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
               <Star className="h-5 w-5" />
@@ -84,8 +84,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab('orders')}
               className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'orders'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-black text-black dark:border-brand-gold dark:text-brand-gold'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
               <ShoppingBag className="h-5 w-5" />
@@ -95,8 +95,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab('wishlisted')}
               className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'wishlisted'
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-black text-black dark:border-brand-gold dark:text-brand-gold'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
               <Heart className="h-5 w-5" />
