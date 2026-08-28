@@ -1,13 +1,10 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initAdmin } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
+import { collection, query, where, limit, getDocs, writeBatch, doc, increment, serverTimestamp } from 'firebase/firestore';
 
 export async function POST(req: Request) {
   try {
-    initAdmin();
-    const db = getFirestore();
-    
     // 1. Get raw body and signature
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
@@ -35,9 +32,10 @@ export async function POST(req: Request) {
       const payment = event.payload.payment.entity;
       const razorpayOrderId = payment.order_id; 
 
-      // Query the order by razorpay_order_id
-      const ordersRef = db.collection('orders');
-      const querySnapshot = await ordersRef.where('razorpayOrderId', '==', razorpayOrderId).limit(1).get();
+      // Query the order by razorpay_order_id using Client SDK
+      const ordersRef = collection(db, 'orders');
+      const q = query(ordersRef, where('razorpayOrderId', '==', razorpayOrderId), limit(1));
+      const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
         console.error('Order not found for Razorpay Order ID:', razorpayOrderId);
@@ -48,13 +46,13 @@ export async function POST(req: Request) {
       const orderData = orderDoc.data();
 
       // Initialize a Firestore batch for atomic operations
-      const batch = db.batch();
+      const batch = writeBatch(db);
 
       // Step A: Update the order status to 'paid'
       batch.update(orderDoc.ref, {
         status: 'paid',
         paymentId: payment.id,
-        updatedAt: FieldValue.serverTimestamp()
+        updatedAt: serverTimestamp()
       });
 
       // Step B: Decrement the stock_count for each product in the order
@@ -65,11 +63,11 @@ export async function POST(req: Request) {
           const qty = item.quantity || item.qty;
           
           if (id && qty) {
-            const productRef = db.collection('products').doc(id);
+            const productRef = doc(db, 'products', id);
             
             // Use FieldValue.increment with a negative value to safely decrement stock
             batch.update(productRef, {
-              stock_count: FieldValue.increment(-qty)
+              stock_count: increment(-qty)
             });
           }
         }
