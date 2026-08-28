@@ -1,0 +1,22 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/account/page": "app/account/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/webhooks/razorpay/route": "app/api/webhooks/razorpay/route.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/collections/page": "app/collections/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/gallery/page": "app/gallery/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/payment-failed/page": "app/payment-failed/page.js",
+  "/privacy-policy/page": "app/privacy-policy/page.js",
+  "/product/[id]/page": "app/product/[id]/page.js",
+  "/register/page": "app/register/page.js",
+  "/shipping-and-refund/page": "app/shipping-and-refund/page.js",
+  "/store/page": "app/store/page.js",
+  "/success/page": "app/success/page.js",
+  "/terms-and-conditions/page": "app/terms-and-conditions/page.js"
+}
