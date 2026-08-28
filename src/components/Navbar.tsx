@@ -23,7 +23,7 @@ export default function Navbar() {
           <div className="flex items-center lg:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="text-gray-900 hover:text-brand-maroon transition-colors p-2 -ml-2"
+              className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold transition-colors p-2 -ml-2"
             >
               <span className="sr-only">Open menu</span>
               <Menu className="h-6 w-6" />
@@ -41,12 +41,12 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex sm:space-x-8 items-center justify-center flex-1">
-            <Link href="/" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Home</Link>
-            <Link href="/collections" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Collections</Link>
-            <Link href="/gallery" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Gallery</Link>
-            <Link href="/collections?type=wedding" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Wedding</Link>
-            <Link href="/collections?type=casual" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Casual</Link>
-            <Link href="/store" className="text-gray-900 hover:text-brand-maroon px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon">Store</Link>
+            <Link href="/" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Home</Link>
+            <Link href="/collections" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Collections</Link>
+            <Link href="/gallery" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Gallery</Link>
+            <Link href="/collections?type=wedding" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Wedding</Link>
+            <Link href="/collections?type=casual" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Casual</Link>
+            <Link href="/store" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold px-3 py-2 text-sm font-medium transition-colors border-b-2 border-transparent hover:border-brand-maroon dark:hover:border-brand-gold">Store</Link>
           </div>
 
           {/* User & Cart Icons */}
@@ -54,25 +54,25 @@ export default function Navbar() {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="text-gray-900 hover:text-brand-maroon transition-colors p-2 focus:outline-none"
+              className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold transition-colors p-2 focus:outline-none"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
                 <Sun className="h-5 w-5 text-brand-gold fill-brand-gold/20" />
               ) : (
-                <Moon className="h-5 w-5 text-gray-700" />
+                <Moon className="h-5 w-5 fill-transparent" />
               )}
             </button>
 
             {(user || firebaseUser) ? (
-              <Link href="/account" className="text-gray-900 hover:text-brand-maroon transition-colors p-2">
+              <Link href="/account" className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold transition-colors p-2">
                 <span className="sr-only">Account</span>
-                <User className="h-5 w-5 fill-brand-maroon text-brand-maroon" />
+                <User className="h-5 w-5" />
               </Link>
             ) : (
               <button 
                 onClick={() => openAuthModal()} 
-                className="text-gray-900 hover:text-brand-maroon transition-colors p-2"
+                className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold transition-colors p-2"
               >
                 <span className="sr-only">Sign In</span>
                 <User className="h-5 w-5" />
@@ -80,7 +80,7 @@ export default function Navbar() {
             )}
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="text-gray-900 hover:text-brand-maroon transition-colors p-2 relative"
+              className="text-gray-800 dark:text-gray-100 hover:text-brand-maroon dark:hover:text-brand-gold transition-colors p-2 relative"
             >
               <span className="sr-only">Cart</span>
               <ShoppingBag className="h-6 w-6" />

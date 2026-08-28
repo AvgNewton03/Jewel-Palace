@@ -248,7 +248,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
             <div className="space-y-4 mb-8">
               <button 
                 onClick={handleAddToCart}
-                className="w-full bg-foreground text-white font-medium text-lg py-4 rounded hover:bg-brand-maroon shadow-md transition-all flex justify-center items-center gap-2"
+                className="w-full bg-foreground text-white dark:text-black font-medium text-lg py-4 rounded hover:bg-brand-maroon shadow-md transition-all flex justify-center items-center gap-2"
               >
                 <ShoppingBag className="h-5 w-5" />
                 Add to Cart

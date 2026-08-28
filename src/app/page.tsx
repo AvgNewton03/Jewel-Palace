@@ -6,6 +6,13 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ProductCard from "@/components/ProductCard";
 import { ArrowRight, Star, Sparkles, MessageSquarePlus, X, ChevronLeft, ChevronRight } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 // Types
 interface Product {
@@ -54,6 +61,73 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [isBannerVisible, setIsBannerVisible] = useState(false);
   const bannerRef = useRef<HTMLElement>(null);
+  
+  // Hero section refs & state
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const barsContainerRef = useRef<HTMLDivElement>(null);
+  const h1WrapperRef = useRef<HTMLDivElement>(null);
+  const h1TextRef = useRef<HTMLHeadingElement>(null);
+  
+  const sampleImages = [
+    '/sample_images/1.jpeg',
+    '/sample_images/2.jpeg',
+    '/sample_images/3.jpeg',
+    '/sample_images/4.jpeg',
+    '/sample_images/5.jpeg',
+    '/sample_images/6.jpeg',
+    '/sample_images/7.jpeg',
+    '/sample_images/8.jpeg',
+    '/sample_images/9.jpeg',
+  ];
+  
+  // Initialize with sample images so the DOM elements exist on first render
+  const [heroImages, setHeroImages] = useState<string[]>(sampleImages.slice(0, 6));
+
+  // Logic to determine 6 hero images
+  useEffect(() => {
+
+    if (!loading) {
+      if (allProducts.length >= 20) {
+        setHeroImages(allProducts.slice(0, 6).map(p => optimizeImageUrl(p.imageUrl)));
+      } else {
+        // Strictly use sample images until 20 products are available
+        setHeroImages(sampleImages.slice(0, 6));
+      }
+    }
+  }, [allProducts, loading]);
+
+  useGSAP(() => {
+    if (!barsContainerRef.current || heroImages.length === 0 || !h1WrapperRef.current || !h1TextRef.current) return;
+    const bars = gsap.utils.toArray(".hero-bar", barsContainerRef.current) as HTMLElement[];
+    
+    // Set initial state
+    gsap.set(bars, { 
+      rotationY: 0
+    });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroSectionRef.current,
+        start: "top top",
+        end: "+=200%", // 2x viewport height for ample scroll distance
+        scrub: 2, // Smoother scrubbing
+        pin: true,
+        pinSpacing: true, // Crucial for preventing overlap of sections below
+        anticipatePin: 1, // Prevent pin jumping/flashing
+      }
+    });
+
+    // Step 1: Reveal height of wrapper
+    tl.to(h1WrapperRef.current, { height: "auto", ease: "power1.inOut" })
+      // Step 2: Fade in and translate text
+      .to(h1TextRef.current, { opacity: 1, y: 0, ease: "power1.out" }, "<")
+      // Step 3: Animate 3D bars
+      .to(bars, {
+        rotationY: 180, // Flip 180 degrees like blinds
+        stagger: 0.1,
+        ease: "power1.inOut",
+      }, "<0.2");
+  }, { scope: heroSectionRef }); // Empty dependencies so it only runs once on mount
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -160,29 +234,56 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background - ideally this would be an actual high-quality banner image */}
-        <div className="absolute inset-0 bg-brand-maroon/90 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4204b281f5?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
+      <section ref={heroSectionRef} className="relative h-[100vh] w-full flex items-center justify-center bg-[#1c1917] z-0">
+        {/* 3D Bars Container */}
+        <div ref={barsContainerRef} className="absolute inset-0 z-0 grid grid-cols-2 grid-rows-2 md:flex md:flex-row w-full h-full perspective-[1200px]">
+          {heroImages.map((img, i) => (
+            <div 
+              key={i} 
+              className={`relative w-full h-full md:flex-1 border-b md:border-b-0 md:border-r border-black/20 md:last:border-r-0 ${i >= 4 ? 'hidden md:block' : 'block'}`}
+            >
+              <div className="hero-bar relative w-full h-full origin-center [transform-style:preserve-3d]">
+                {/* Front Face */}
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
+                  <Image 
+                    src={img}
+                    alt={`Hero image ${i + 1}`}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 16vw"
+                    priority={i < 4}
+                    className="object-cover"
+                  />
+                </div>
+                {/* Back Face */}
+                <div 
+                  className="absolute inset-0 w-full h-full bg-brand-maroon/90 [backface-visibility:hidden]"
+                  style={{ transform: 'rotateY(180deg)' }}
+                ></div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Overlay gradient to ensure text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/70 z-0 pointer-events-none"></div>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 animate-fade-in-up">
-          <span className="text-brand-gold font-medium tracking-[0.2em] uppercase text-sm md:text-base mb-6 block">Exquisite Imitation Collection</span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8 drop-shadow-lg">
-            Adorn Yourself With <br/>
-            <span className="italic text-brand-gold">Royal Elegance</span>
-          </h1>
-          <p className="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light leading-relaxed hidden sm:block">
-            Discover our festive & vibrant pieces meticulously crafted to bring out the queen in you.
-          </p>
+        {/* Hero Text Overlay */}
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 pointer-events-none flex flex-col items-center">
+          <span className="text-brand-gold font-medium tracking-[0.2em] uppercase text-sm md:text-base mb-6 block drop-shadow-md">Exquisite Imitation Collection</span>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/collections?type=wedding" className="w-full sm:w-auto bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors flex items-center justify-center gap-2 group">
+          <div ref={h1WrapperRef} className="overflow-hidden h-0 w-full">
+            <h1 ref={h1TextRef} className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8 drop-shadow-xl opacity-0 translate-y-12">
+              Adorn Yourself With <br/>
+              <span className="italic text-brand-gold">Royal Elegance</span>
+            </h1>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pointer-events-auto mt-6">
+            <Link href="/collections?type=wedding" className="w-full sm:w-auto bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors flex items-center justify-center gap-2 group shadow-lg">
               Shop Wedding
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/collections" className="w-full sm:w-auto bg-transparent border border-white text-white font-medium px-8 py-4 rounded-sm hover:bg-white/10 transition-colors">
+            <Link href="/collections" className="w-full sm:w-auto bg-transparent border border-white text-white font-medium px-8 py-4 rounded-sm hover:bg-white/10 transition-colors shadow-lg backdrop-blur-sm">
               Explore All
             </Link>
           </div>
