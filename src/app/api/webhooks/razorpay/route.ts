@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, query, where, limit, getDocs, writeBatch, doc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs, writeBatch, doc, increment, serverTimestamp } from 'firebase/firestore/lite';
 
 export async function POST(req: Request) {
   try {

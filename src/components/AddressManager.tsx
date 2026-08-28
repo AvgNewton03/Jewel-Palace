@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore/lite";
 import { MapPin, Trash2, Plus, Check, AlertCircle } from "lucide-react";
 
 export interface Address {
