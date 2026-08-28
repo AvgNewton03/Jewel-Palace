@@ -1,3 +1,0 @@
-module.exports=[93482,a=>{"use strict";var b=a.i(87924),c=a.i(72131),d=a.i(50944),e=a.i(56025);a.s(["default",0,function(){let a=(0,d.useRouter)(),{openAuthModal:f}=(0,e.useAuth)(),g=(0,c.useRef)(!1);return(0,c.useEffect)(()=>{g.current||(g.current=!0,f(),a.replace("/"))},[f,a]),(0,b.jsx)("div",{className:"flex-1 flex items-center justify-center min-h-[60vh]",children:(0,b.jsx)("div",{className:"animate-spin rounded-full h-8 w-8 border-b-2 border-brand-maroon"})})}])}];
-
-//# sourceMappingURL=src_app_login_page_tsx_0yrgg2z._.js.map
