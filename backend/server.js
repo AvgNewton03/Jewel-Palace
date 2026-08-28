@@ -24,8 +24,7 @@ const allowedOrigins = [
   "https://www.jewelpalacemumbai.com",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://jewel-palace-git-main-deepams-projects-8c8329c1.vercel.app",
-  "https://jewel-palace.vercel.app", // Add custom vercel domain if you have one
+  "https://jewel-palace.pages.dev", // Cloudflare Pages domain
 ];
 
 app.use(
@@ -34,11 +33,10 @@ app.use(
       // allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        // The origin is in our allowed list
+      // Allow exact matches from the allowedOrigins array or any Cloudflare Pages preview deployment
+      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".jewel-palace.pages.dev")) {
         callback(null, true);
       } else {
-        // The origin is NOT in our allowed list
         callback(new Error("Not allowed by CORS"));
       }
     },
