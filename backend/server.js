@@ -34,7 +34,10 @@ app.use(
       if (!origin) return callback(null, true);
 
       // Allow exact matches from the allowedOrigins array or any Cloudflare Pages preview deployment
-      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".jewel-palace.pages.dev")) {
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.endsWith(".jewel-palace.pages.dev")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

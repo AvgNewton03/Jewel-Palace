@@ -43,3 +43,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 *firebase-adminsdk*.json
+
+# specific secret files identified
+.env
+.env.local
+.next/standalone/.env
+.open-next/cloudflare/next-env.mjs
+.open-next/server-functions/default/.env
