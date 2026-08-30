@@ -2,21 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Instagram,
-  MessageCircle,
-} from "lucide-react";
+import { MapPin, Phone, Mail, Instagram, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
-  
-  if (pathname?.startsWith('/admin')) return null;
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-[#1c1917] text-[#fffbf2] border-t border-brand-gold/10">
+    <footer className="bg-[#1c1917]/80 backdrop-blur-xl text-[#fffbf2] border-t border-brand-gold/10">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Col */}
@@ -85,8 +79,6 @@ export default function Footer() {
             </ul>
           </div>
 
-
-
           {/* Contact */}
           <div>
             <h3 className="text-sm font-semibold text-brand-gold uppercase tracking-wider mb-4">
@@ -115,7 +107,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-brand-gold mr-3 flex-shrink-0" />
-                <a 
+                <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=praveensipani215@gmail.com"
                   target="_blank"
                   rel="noopener noreferrer"

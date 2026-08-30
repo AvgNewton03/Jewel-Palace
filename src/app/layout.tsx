@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Jewel Palace | Exquisite Imitation Jewellery",
+  title: "Jewel Palace",
   description:
     "Discover our festive and vibrant collection of imitation jewellery. Shop wedding, heavy, and casual pieces.",
   appleWebApp: {

@@ -55,7 +55,7 @@ export default function ProductCard({
 
   return (
     <div 
-      className="group flex flex-col bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500"
+      className="group flex flex-col glass-card rounded-lg overflow-hidden transition-all duration-500"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

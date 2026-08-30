@@ -45,7 +45,10 @@
 @layer base {
   body {
     background-color: var(--background);
-    background-image: radial-gradient(circle at 50% 30%, #ffffff 0%, #f5ece2 100%);
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.08), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(128, 0, 0, 0.05), transparent 25%),
+      radial-gradient(circle at 50% 80%, rgba(4, 120, 87, 0.05), transparent 25%);
     background-attachment: fixed;
     color: var(--foreground);
     @apply font-sans transition-colors duration-300;
@@ -53,8 +56,39 @@
   
   .dark body {
     background-color: var(--background) !important;
-    background-image: radial-gradient(circle at 50% 30%, #281c15 0%, #0d0907 100%) !important;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(232, 198, 101, 0.05), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(74, 10, 10, 0.05), transparent 25%),
+      radial-gradient(circle at 50% 80%, rgba(4, 90, 66, 0.05), transparent 25%) !important;
     background-attachment: fixed !important;
+  }
+  
+  /* Glassmorphism Utilities */
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.05)];
+  }
+  .dark .glass-panel {
+    @apply bg-[#201712]/60 backdrop-blur-md border border-[#32251d]/60 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
+  }
+
+  .glass-card {
+    @apply bg-white/50 backdrop-blur-sm border border-white/50 shadow-sm transition-all duration-300;
+  }
+  .glass-card:hover {
+    @apply bg-white/70 shadow-md border-white/70;
+  }
+  .dark .glass-card {
+    @apply bg-[#201712]/50 backdrop-blur-sm border border-[#32251d]/50 shadow-sm transition-all duration-300;
+  }
+  .dark .glass-card:hover {
+    @apply bg-[#201712]/70 shadow-md border-[#32251d]/80;
+  }
+
+  .glass-nav {
+    @apply bg-white/70 backdrop-blur-lg border-b border-white/40 shadow-sm;
+  }
+  .dark .glass-nav {
+    @apply bg-[#0d0907]/70 backdrop-blur-lg border-b border-[#32251d]/40 shadow-sm;
   }
   
   h1, h2, h3, h4, h5, h6 {

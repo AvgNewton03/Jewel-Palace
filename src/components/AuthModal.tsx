@@ -295,7 +295,7 @@ export default function AuthModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div
-        className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden relative"
+        className="glass-panel w-full max-w-md rounded-xl shadow-2xl overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button

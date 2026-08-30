@@ -61,73 +61,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [isBannerVisible, setIsBannerVisible] = useState(false);
   const bannerRef = useRef<HTMLElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   
-  // Hero section refs & state
-  const heroSectionRef = useRef<HTMLElement>(null);
-  const barsContainerRef = useRef<HTMLDivElement>(null);
-  const h1WrapperRef = useRef<HTMLDivElement>(null);
-  const h1TextRef = useRef<HTMLHeadingElement>(null);
-  
-  const sampleImages = [
-    '/sample_images/1.jpeg',
-    '/sample_images/2.jpeg',
-    '/sample_images/3.jpeg',
-    '/sample_images/4.jpeg',
-    '/sample_images/5.jpeg',
-    '/sample_images/6.jpeg',
-    '/sample_images/7.jpeg',
-    '/sample_images/8.jpeg',
-    '/sample_images/9.jpeg',
-  ];
-  
-  // Initialize with sample images so the DOM elements exist on first render
-  const [heroImages, setHeroImages] = useState<string[]>(sampleImages.slice(0, 6));
 
-  // Logic to determine 6 hero images
-  useEffect(() => {
-
-    if (!loading) {
-      if (allProducts.length >= 20) {
-        setHeroImages(allProducts.slice(0, 6).map(p => optimizeImageUrl(p.imageUrl)));
-      } else {
-        // Strictly use sample images until 20 products are available
-        setHeroImages(sampleImages.slice(0, 6));
-      }
-    }
-  }, [allProducts, loading]);
-
-  useGSAP(() => {
-    if (!barsContainerRef.current || heroImages.length === 0 || !h1WrapperRef.current || !h1TextRef.current) return;
-    const bars = gsap.utils.toArray(".hero-bar", barsContainerRef.current) as HTMLElement[];
-    
-    // Set initial state
-    gsap.set(bars, { 
-      rotationY: 0
-    });
-
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: heroSectionRef.current,
-        start: "top top",
-        end: "+=200%", // 2x viewport height for ample scroll distance
-        scrub: 2, // Smoother scrubbing
-        pin: true,
-        pinSpacing: true, // Crucial for preventing overlap of sections below
-        anticipatePin: 1, // Prevent pin jumping/flashing
-      }
-    });
-
-    // Step 1: Reveal height of wrapper
-    tl.to(h1WrapperRef.current, { height: "auto", ease: "power1.inOut" })
-      // Step 2: Fade in and translate text
-      .to(h1TextRef.current, { opacity: 1, y: 0, ease: "power1.out" }, "<")
-      // Step 3: Animate 3D bars
-      .to(bars, {
-        rotationY: 180, // Flip 180 degrees like blinds
-        stagger: 0.1,
-        ease: "power1.inOut",
-      }, "<0.2");
-  }, { scope: heroSectionRef }); // Empty dependencies so it only runs once on mount
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -234,56 +170,50 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section ref={heroSectionRef} className="relative h-[100vh] w-full flex items-center justify-center bg-[#1c1917] z-0">
-        {/* 3D Bars Container */}
-        <div ref={barsContainerRef} className="absolute inset-0 z-0 grid grid-cols-2 grid-rows-2 md:flex md:flex-row w-full h-full perspective-[1200px]">
-          {heroImages.map((img, i) => (
-            <div 
-              key={i} 
-              className={`relative w-full h-full md:flex-1 border-b md:border-b-0 md:border-r border-black/20 md:last:border-r-0 ${i >= 4 ? 'hidden md:block' : 'block'}`}
-            >
-              <div className="hero-bar relative w-full h-full origin-center [transform-style:preserve-3d]">
-                {/* Front Face */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
-                  <Image 
-                    src={img}
-                    alt={`Hero image ${i + 1}`}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 16vw"
-                    priority={i < 4}
-                    className="object-cover"
-                  />
-                </div>
-                {/* Back Face */}
-                <div 
-                  className="absolute inset-0 w-full h-full bg-brand-maroon/90 [backface-visibility:hidden]"
-                  style={{ transform: 'rotateY(180deg)' }}
-                ></div>
-              </div>
-            </div>
-          ))}
-          
-          {/* Overlay gradient to ensure text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/70 z-0 pointer-events-none"></div>
-        </div>
+      <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+        
+        {/* Mobile Video Overlay */}
+        <video 
+          src="/hero-intro-mobile.mp4" 
+          autoPlay 
+          muted 
+          playsInline 
+          onEnded={() => setIsVideoPlaying(false)} 
+          className={`block md:hidden absolute inset-0 w-full h-full object-cover z-50 transition-opacity duration-1000 ease-in-out ${isVideoPlaying ? "opacity-100" : "opacity-0 pointer-events-none"}`} 
+        />
+        
+        {/* Desktop Video Overlay */}
+        <video 
+          src="/hero-intro-desktop.mp4" 
+          autoPlay 
+          muted 
+          playsInline 
+          onEnded={() => setIsVideoPlaying(false)} 
+          className={`hidden md:block absolute inset-0 w-full h-full object-cover z-50 transition-opacity duration-1000 ease-in-out ${isVideoPlaying ? "opacity-100" : "opacity-0 pointer-events-none"}`} 
+        />
 
+        <div className="absolute inset-0 bg-brand-maroon/90 z-0">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4204b281f5?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
+        </div>
+        
         {/* Hero Text Overlay */}
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 pointer-events-none flex flex-col items-center">
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 flex flex-col items-center">
           <span className="text-brand-gold font-medium tracking-[0.2em] uppercase text-sm md:text-base mb-6 block drop-shadow-md">Exquisite Imitation Collection</span>
           
-          <div ref={h1WrapperRef} className="overflow-hidden h-0 w-full">
-            <h1 ref={h1TextRef} className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8 drop-shadow-xl opacity-0 translate-y-12">
-              Adorn Yourself With <br/>
-              <span className="italic text-brand-gold">Royal Elegance</span>
+          <div className="w-full">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8 drop-shadow-xl">
+              Wear the <br/>
+              <span className="italic text-brand-gold">trend</span>
             </h1>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pointer-events-auto mt-6">
-            <Link href="/collections?type=wedding" className="w-full sm:w-auto bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors flex items-center justify-center gap-2 group shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-6">
+            <Link href="/collections?type=wedding" className="w-full sm:w-auto rounded-full bg-[#d4af37]/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-gold drop-shadow-md font-semibold px-8 py-4 hover:bg-[#d4af37]/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out flex items-center justify-center gap-2 group">
               Shop Wedding
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/collections" className="w-full sm:w-auto bg-transparent border border-white text-white font-medium px-8 py-4 rounded-sm hover:bg-white/10 transition-colors shadow-lg backdrop-blur-sm">
+            <Link href="/collections" className="w-full sm:w-auto rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-white font-medium px-8 py-4 hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out flex justify-center items-center">
               Explore All
             </Link>
           </div>
@@ -333,7 +263,7 @@ export default function Home() {
               </div>
               <h2 className="text-3xl md:text-4xl font-serif text-gray-900">Most Loved Pieces</h2>
             </div>
-            <Link href="/collections?sort=trending" className="hidden md:flex items-center gap-2 text-brand-maroon font-medium hover:text-brand-gold transition-colors pb-1 border-b-2 border-transparent hover:border-brand-gold">
+            <Link href="/collections?sort=trending" className="hidden md:flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-maroon px-4 py-2 font-medium hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -360,7 +290,7 @@ export default function Home() {
           </div>
           
           <div className="mt-10 text-center md:hidden">
-            <Link href="/collections?sort=trending" className="inline-flex items-center gap-2 text-brand-maroon font-medium border border-brand-maroon px-6 py-3 rounded hover:bg-brand-maroon hover:text-white transition-colors">
+            <Link href="/collections?sort=trending" className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-maroon font-medium px-6 py-3 hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out">
               View All Trending
             </Link>
           </div>
@@ -420,7 +350,7 @@ export default function Home() {
                 <span className="text-xs uppercase tracking-wider text-brand-bg/70 mt-1">Unique Designs</span>
               </div>
             </div>
-            <Link href="/collections" className="bg-brand-gold text-brand-maroon font-semibold px-8 py-4 rounded-sm hover:bg-white transition-colors self-start">
+            <Link href="/collections" className="rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-white font-semibold px-8 py-4 hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out self-start">
               Visit Our Store
             </Link>
           </div>
@@ -444,13 +374,13 @@ export default function Home() {
               
               {reviews.length > 1 && (
                 <div className="flex justify-center gap-4 mt-8">
-                  <button onClick={() => setCurrentReviewIndex(prev => prev === 0 ? reviews.length - 1 : prev - 1)} className="p-2 rounded-full hover:bg-brand-maroon/10 text-brand-maroon transition-colors"><ChevronLeft className="h-6 w-6"/></button>
+                  <button onClick={() => setCurrentReviewIndex(prev => prev === 0 ? reviews.length - 1 : prev - 1)} className="p-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-maroon hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out"><ChevronLeft className="h-6 w-6"/></button>
                   <div className="flex items-center gap-2">
                     {reviews.map((_, i) => (
                       <div key={i} className={`h-2 rounded-full transition-all duration-300 ${i === currentReviewIndex ? "w-6 bg-brand-maroon" : "w-2 bg-brand-maroon/30"}`} />
                     ))}
                   </div>
-                  <button onClick={() => setCurrentReviewIndex(prev => (prev + 1) % reviews.length)} className="p-2 rounded-full hover:bg-brand-maroon/10 text-brand-maroon transition-colors"><ChevronRight className="h-6 w-6"/></button>
+                  <button onClick={() => setCurrentReviewIndex(prev => (prev + 1) % reviews.length)} className="p-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-maroon hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out"><ChevronRight className="h-6 w-6"/></button>
                 </div>
               )}
             </div>
@@ -468,7 +398,7 @@ export default function Home() {
           
           <button 
             onClick={() => setIsReviewModalOpen(true)}
-            className="mt-10 inline-flex items-center gap-2 border border-brand-maroon text-brand-maroon px-6 py-3 rounded-sm hover:bg-brand-maroon hover:text-white transition-colors font-medium"
+            className="mt-10 inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-maroon px-6 py-3 font-medium hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out"
           >
             <MessageSquarePlus className="h-4 w-4" />
             Write a Review
@@ -481,7 +411,7 @@ export default function Home() {
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden relative">
               <div className="bg-brand-maroon p-6 text-white flex justify-between items-center">
                 <h3 className="text-2xl font-serif">Share Your Experience</h3>
-                <button onClick={() => setIsReviewModalOpen(false)} className="text-white/80 hover:text-white transition-colors">
+                <button onClick={() => setIsReviewModalOpen(false)} className="p-1 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-white hover:bg-white/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out">
                   <X className="h-6 w-6" />
                 </button>
               </div>
@@ -531,7 +461,7 @@ export default function Home() {
                 <button 
                   type="submit" 
                   disabled={submittingReview}
-                  className="w-full bg-brand-gold text-brand-maroon font-semibold py-4 rounded-sm hover:bg-brand-maroon hover:text-white transition-colors flex justify-center items-center gap-2"
+                  className="w-full rounded-full bg-[#d4af37]/10 backdrop-blur-xl border border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.3)] text-brand-gold drop-shadow-md font-semibold py-4 hover:bg-[#d4af37]/20 hover:border-white/40 hover:backdrop-blur-2xl hover:shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)] active:scale-95 active:bg-white/30 transition-all duration-300 ease-out flex justify-center items-center gap-2"
                 >
                   {submittingReview ? (
                     <span className="animate-pulse">Submitting...</span>
