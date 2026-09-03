@@ -22,7 +22,11 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true },
     firebaseUid: { type: String, required: true, unique: true },
-    role: { type: String, default: "customer" },
+    role: {
+      type: String,
+      enum: ["customer", "admin"],
+      default: "customer",
+    },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     addresses: [addressSchema],
   },

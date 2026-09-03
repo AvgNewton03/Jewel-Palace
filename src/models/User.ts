@@ -23,7 +23,11 @@ const userSchema = new Schema(
     email: { type: String, required: true },
     phone: { type: String },
     firebaseUid: { type: String, required: true, unique: true },
-    role: { type: String, default: "customer" },
+    role: {
+      type: String,
+      enum: ["customer", "admin"],
+      default: "customer",
+    },
     wishlist: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     addresses: [addressSchema],
   },

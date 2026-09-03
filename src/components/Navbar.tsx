@@ -47,6 +47,14 @@ export default function Navbar() {
             <Link href="/collections?type=wedding" className="text-brand-gold font-medium hover:text-brand-maroon px-3 py-2 text-sm transition-colors border-b-2 border-transparent hover:border-brand-maroon">Wedding</Link>
             <Link href="/collections?type=casual" className="text-brand-gold font-medium hover:text-brand-maroon px-3 py-2 text-sm transition-colors border-b-2 border-transparent hover:border-brand-maroon">Casual</Link>
             <Link href="/store" className="text-brand-gold font-medium hover:text-brand-maroon px-3 py-2 text-sm transition-colors border-b-2 border-transparent hover:border-brand-maroon">Store</Link>
+            {user?.role === "admin" && (
+              <a
+                href={process.env.NODE_ENV === "production" ? "https://admin.jewelpalacemumbai.com" : "/admin/dashboard"}
+                className="text-amber-500 font-semibold hover:text-brand-maroon px-3 py-2 text-sm transition-colors border-b-2 border-transparent hover:border-brand-maroon"
+              >
+                Admin
+              </a>
+            )}
           </div>
 
           {/* User & Cart Icons */}

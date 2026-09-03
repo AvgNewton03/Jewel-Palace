@@ -58,6 +58,15 @@ export default function MobileMenu() {
           <Link href="/collections?type=wedding" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Wedding</Link>
           <Link href="/collections?type=casual" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Casual</Link>
           <Link href="/store" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">Store</Link>
+          {user?.role === "admin" && (
+            <a
+              href={process.env.NODE_ENV === "production" ? "https://admin.jewelpalacemumbai.com" : "/admin/dashboard"}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-4 py-3 text-base font-semibold text-amber-600 dark:text-amber-400 hover:bg-brand-maroon/5 rounded-md"
+            >
+              Admin Dashboard
+            </a>
+          )}
           <div className="pt-4 mt-2 border-t border-gray-100">
             {(user || firebaseUser) ? (
               <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-maroon/5 hover:text-brand-maroon rounded-md">My Account</Link>

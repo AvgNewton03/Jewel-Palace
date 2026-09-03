@@ -22,34 +22,61 @@ const app = express();
 const allowedOrigins = [
   "https://jewelpalacemumbai.com",
   "https://www.jewelpalacemumbai.com",
+  "https://admin.jewelpalacemumbai.com",
   "http://localhost:3000",
+  "http://admin.localhost:3000",
   "http://127.0.0.1:3000",
+  "http://admin.127.0.0.1:3000",
   "https://jewel-palace.pages.dev",
   "https://jewel-palace.onrender.com",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, curl, or server-side fetch)
-      if (!origin) return callback(null, true);
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
 
-      // Allow exact matches or subdomains of Cloudflare Pages & Render
-      if (
-        allowedOrigins.indexOf(origin) !== -1 ||
-        origin.endsWith(".jewel-palace.pages.dev") ||
-        origin.endsWith(".onrender.com")
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  }),
-);
+  // Direct whitelist match
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Regex matching subdomains of jewelpalacemumbai.com
+  if (/^https:\/\/([a-zA-Z0-9-]+\.)*jewelpalacemumbai\.com$/.test(origin)) {
+    return true;
+  }
+
+  // Regex matching localhost / 127.0.0.1 on any port with any subdomain
+  if (/^http:\/\/([a-zA-Z0-9-]+\.)*localhost(:\d+)?$/.test(origin)) {
+    return true;
+  }
+  if (/^http:\/\/([a-zA-Z0-9-]+\.)*127\.0\.0\.1(:\d+)?$/.test(origin)) {
+    return true;
+  }
+
+  // Cloudflare Pages & Render preview subdomains
+  if (
+    origin.endsWith(".jewel-palace.pages.dev") ||
+    origin.endsWith(".pages.dev") ||
+    origin.endsWith(".onrender.com")
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options(/(.*)/, cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -60,6 +87,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin/orders", orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;

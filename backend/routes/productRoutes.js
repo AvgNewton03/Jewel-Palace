@@ -3,7 +3,7 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { requireAdmin } from "../middleware/authMiddleware.js";
 import dotenv from "dotenv";
 
 const router = express.Router();
@@ -30,7 +30,7 @@ const parseArrayField = (field) => {
   }
 };
 
-// GET /api/products - Get all products
+// GET /api/products - Get all products (Public)
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find({}).sort({ createdAt: -1 });
@@ -41,23 +41,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/products/:id - Get a single product
-router.get("/:id", async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    res.status(500).json({ error: "Failed to fetch product" });
-  }
-});
-
-// GET /api/products/admin/most-wishlisted - Analytics
-router.get("/admin/most-wishlisted", async (req, res) => {
+// GET /api/products/admin/most-wishlisted - Analytics (Protected Admin)
+router.get("/admin/most-wishlisted", requireAdmin, async (req, res) => {
   try {
     const wishlisted = await User.aggregate([
       { $unwind: "$wishlist" },
@@ -88,8 +73,23 @@ router.get("/admin/most-wishlisted", async (req, res) => {
   }
 });
 
-// All routes require authentication
-router.use(protect);
+// GET /api/products/:id - Get a single product (Public)
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
+// All mutation routes below require Admin privileges
+router.use(requireAdmin);
 
 // POST route /api/products/add
 router.post("/add", upload.array("media", 10), async (req, res) => {

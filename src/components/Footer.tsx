@@ -88,7 +88,7 @@ export default function Footer() {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-brand-gold mr-3 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-gray-300">
-                  G-77, Moksh Plaza, Jambli Gali, 92, Swami Vivekanand Rd,
+                  G-77, Moksh Plaza, Jambli Gali, Swami Vivekanand Rd,
                   Borivali West, Mumbai, Maharashtra 400092
                 </span>
               </li>

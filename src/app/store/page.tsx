@@ -30,7 +30,7 @@ export default function StoreContactPage() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-1">Our Flagship Store</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    G-77, Moksh Plaza, Jambli Gali, 92, <br />
+                    G-77, Moksh Plaza, Jambli Gali, <br />
                     Swami Vivekanand Rd, Borivali West,<br />
                     Mumbai, Maharashtra 400092
                   </p>
