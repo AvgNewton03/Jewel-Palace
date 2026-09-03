@@ -55,12 +55,12 @@ export default function ProductCard({
 
   return (
     <div 
-      className="group flex flex-col glass-card rounded-lg overflow-hidden transition-all duration-500"
+      className="group flex flex-col bg-stone-50 dark:bg-[#241a14] border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden transition-all duration-500 shadow-sm hover:shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+      <div className="relative aspect-[4/5] overflow-hidden bg-stone-100 dark:bg-[#1a120e]">
         <Link href={`/product/${id}`} className="block w-full h-full">
           <Image
             src={isHovered && hoverImageUrl ? hoverImageUrl : imageUrl}
@@ -74,12 +74,12 @@ export default function ProductCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {isNew && (
-            <span className="bg-brand-emerald text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded">
+            <span className="bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded">
               New
             </span>
           )}
           {occasion && (
-            <span className="bg-brand-maroon/90 text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded truncate max-w-[120px]">
+            <span className="bg-[#6b1414]/90 text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2 rounded truncate max-w-[120px]">
               {occasion}
             </span>
           )}
@@ -90,8 +90,8 @@ export default function ProductCard({
           onClick={handleWishlistToggle}
           className={`absolute top-3 right-3 transition-all backdrop-blur rounded-full p-2 shadow-sm ${
             isWishlisted 
-              ? 'bg-brand-maroon text-white hover:bg-brand-maroon/90 shadow-brand-maroon/30' 
-              : 'bg-white/80 text-gray-400 hover:text-brand-maroon'
+              ? 'bg-[#6b1414] text-white hover:bg-[#801818] shadow-[#6b1414]/30' 
+              : 'bg-white/80 dark:bg-black/60 text-stone-400 hover:text-[#6b1414] dark:hover:text-amber-400'
           }`} 
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -107,12 +107,12 @@ export default function ProductCard({
               e.preventDefault();
               addToCart({ id, title, price, imageUrl });
             }}
-            className="flex-1 bg-white hover:bg-brand-gold text-gray-900 hover:text-white text-sm font-medium py-2.5 rounded transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-white dark:bg-stone-800 hover:bg-[#6b1414] hover:text-white dark:hover:bg-amber-600 text-stone-900 dark:text-stone-100 text-sm font-medium py-2.5 rounded transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Add to Cart</span>
           </button>
-          <Link href={`/product/${id}`} className="bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-700 text-gray-900 dark:text-stone-100 p-2.5 rounded transition-colors tooltip flex items-center justify-center" aria-label="Quick View">
+          <Link href={`/product/${id}`} className="bg-white/90 dark:bg-stone-800/90 hover:bg-white dark:hover:bg-stone-700 text-stone-900 dark:text-stone-100 p-2.5 rounded transition-colors tooltip flex items-center justify-center" aria-label="Quick View">
             <Eye className="h-4 w-4" />
           </Link>
         </div>
@@ -120,14 +120,14 @@ export default function ProductCard({
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-xs text-gray-500 uppercase tracking-widest mb-1 truncate max-w-full">{occasion || 'Jewellery'}</p>
-        <Link href={`/product/${id}`} className="font-serif text-lg text-gray-900 hover:text-brand-maroon transition-colors line-clamp-2 leading-snug mb-2 font-medium">
+        <p className="text-stone-500 dark:text-stone-400 text-xs uppercase tracking-wider mb-1 truncate max-w-full">{occasion || 'Jewellery'}</p>
+        <Link href={`/product/${id}`} className="font-serif text-lg text-stone-900 dark:text-stone-100 hover:text-[#6b1414] dark:hover:text-amber-400 transition-colors line-clamp-2 leading-snug mb-2 font-medium">
           {title}
         </Link>
         <div className="mt-auto flex items-center gap-2">
-          <span className="font-semibold text-brand-maroon">₹{price.toLocaleString('en-IN')}</span>
+          <span className="font-semibold text-[#8a1c1c] dark:text-amber-400">₹{price.toLocaleString('en-IN')}</span>
           {originalPrice && (
-            <span className="text-sm text-gray-400 line-through">₹{originalPrice.toLocaleString('en-IN')}</span>
+            <span className="text-sm text-stone-400 dark:text-stone-500 line-through">₹{originalPrice.toLocaleString('en-IN')}</span>
           )}
         </div>
       </div>

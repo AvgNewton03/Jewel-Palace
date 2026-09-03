@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
+import { getShiprocketToken, createShiprocketOrder } from '@/lib/shiprocket';
 import { 
   collection, 
   query, 
@@ -100,6 +101,23 @@ export async function POST(req: Request) {
 
       await batch.commit();
       console.log(`Successfully confirmed payment and updated stock for: ${razorpayOrderId}`);
+
+      // Step C: Automated shipping via Shiprocket (Non-blocking)
+      try {
+        if (process.env.ENABLE_SHIPROCKET === 'true') {
+          const token = await getShiprocketToken();
+          const shiprocketResult = await createShiprocketOrder(
+            { id: orderDoc.id, ...orderData },
+            token
+          );
+          console.log(
+            'Shiprocket order created successfully. Order ID:',
+            shiprocketResult?.order_id || shiprocketResult?.shipment_id || razorpayOrderId
+          );
+        }
+      } catch (shiprocketError) {
+        console.error('Shiprocket order creation failed:', shiprocketError);
+      }
     }
 
     // Return 200 OK to acknowledge event
@@ -108,4 +126,4 @@ export async function POST(req: Request) {
     console.error('Webhook handling error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
+}

@@ -20,23 +20,25 @@ const app = express();
 
 // Middleware
 const allowedOrigins = [
-  "https://jewelpalacemumbai.com", // Your new root domain
+  "https://jewelpalacemumbai.com",
   "https://www.jewelpalacemumbai.com",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://jewel-palace.pages.dev", // Cloudflare Pages domain
+  "https://jewel-palace.pages.dev",
+  "https://jewel-palace.onrender.com",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl requests)
+      // allow requests with no origin (like mobile apps, curl, or server-side fetch)
       if (!origin) return callback(null, true);
 
-      // Allow exact matches from the allowedOrigins array or any Cloudflare Pages preview deployment
+      // Allow exact matches or subdomains of Cloudflare Pages & Render
       if (
         allowedOrigins.indexOf(origin) !== -1 ||
-        origin.endsWith(".jewel-palace.pages.dev")
+        origin.endsWith(".jewel-palace.pages.dev") ||
+        origin.endsWith(".onrender.com")
       ) {
         callback(null, true);
       } else {
@@ -44,6 +46,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   }),
 );
 app.use(express.json());
@@ -52,6 +56,7 @@ app.use(express.json());
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);

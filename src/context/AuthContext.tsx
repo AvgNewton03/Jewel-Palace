@@ -28,6 +28,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   firebaseUser: FirebaseUser | null;
   token: string | null;
   isLoading: boolean;
@@ -41,13 +42,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Extend Window interface for ReCaptcha
-declare global {
-  interface Window {
-    recaptchaVerifier: any;
-  }
-}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -154,7 +148,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setToken(null);
         setUser(null);
-        localStorage.removeItem("token"); // Clear stale tokens
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
         setIsLoading(false);
       }
     });
@@ -187,7 +184,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signOut(auth);
       setToken(null);
       setUser(null);
-      localStorage.removeItem("token");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     } catch (error) {
       console.error("Logout error", error);
     }
@@ -277,6 +277,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         firebaseUser,
         token,
         isLoading,

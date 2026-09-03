@@ -18,11 +18,12 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
+    const savedTheme = typeof window !== 'undefined' ? (localStorage.getItem('theme') as 'light' | 'dark' | null) : null;
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const targetTheme = systemPrefersDark ? 'dark' : 'light';
+    const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
 
-    setTheme(targetTheme);
-    if (targetTheme === 'dark') {
+    setTheme(initialTheme);
+    if (initialTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
@@ -30,12 +31,15 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      const newTheme = e.matches ? 'dark' : 'light';
-      setTheme(newTheme);
-      if (newTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+      // Only auto-switch if user hasn't explicitly set a preference
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        setTheme(newTheme);
+        if (newTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     };
 
@@ -46,6 +50,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', nextTheme);
+    }
     if (nextTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {

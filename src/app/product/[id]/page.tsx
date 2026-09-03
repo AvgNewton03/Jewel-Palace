@@ -248,20 +248,22 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
             <div className="space-y-4 mb-8">
               <button 
                 onClick={handleAddToCart}
-                className="w-full bg-foreground text-white dark:text-black font-medium text-lg py-4 rounded hover:bg-brand-maroon shadow-md transition-all flex justify-center items-center gap-2"
+                className="w-full bg-black hover:bg-brand-maroon text-white dark:bg-white dark:hover:bg-gray-100 dark:text-black font-semibold text-lg py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2 cursor-pointer"
               >
-                <ShoppingBag className="h-5 w-5" />
-                Add to Cart
+                <ShoppingBag className="h-5 w-5 text-white dark:text-black" />
+                <span className="text-white dark:text-black">Add to Cart</span>
               </button>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
                   onClick={() => {
                     requireAuth(() => {
-                      window.open(`https://wa.me/919029923215?text=Hi Jewel Palace Borivali! I want to order: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                      const productUrl = typeof window !== 'undefined' ? window.location.href : `https://jewelpalacemumbai.com/product/${product._id}`;
+                      const msg = `Hi Jewel Palace Borivali! I want to order: ${product.title} (ID: ${product._id}).\n\nProduct Link: ${productUrl}`;
+                      window.open(`https://wa.me/919029923215?text=${encodeURIComponent(msg)}`, '_blank');
                     });
                   }}
-                  className="bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/30 font-medium py-3.5 rounded hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2"
+                  className="bg-[#25D366]/10 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 dark:border-[#25D366]/40 font-medium py-3.5 rounded-xl hover:bg-[#25D366]/20 dark:hover:bg-[#25D366]/20 transition-all flex justify-center items-center gap-2 cursor-pointer"
                 >
                   <MessageCircle className="h-5 w-5" />
                   Enquire on WhatsApp
@@ -269,13 +271,17 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                 <button 
                   onClick={() => {
                     requireAuth(() => {
-                      window.open(`https://wa.me/919029923215?text=Hi Jewel Palace Borivali! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).%0A%0AReference Image: ${encodeURIComponent(product.imageUrl)}`, '_blank');
+                      const productUrl = typeof window !== 'undefined' ? window.location.href : `https://jewelpalacemumbai.com/product/${product._id}`;
+                      const msg = `Hi Jewel Palace Borivali! I would like to reserve this product to pick up from the store: ${product.title} (ID: ${product._id}).\n\nProduct Link: ${productUrl}`;
+                      window.open(`https://wa.me/919029923215?text=${encodeURIComponent(msg)}`, '_blank');
                     });
                   }}
-                  className="bg-brand-gold/10 text-brand-maroon border border-brand-gold/50 font-medium py-3.5 rounded hover:bg-brand-gold/20 transition-all flex justify-center items-center gap-2"
+                  className="bg-brand-maroon/5 hover:bg-brand-maroon/10 border border-brand-maroon/30 dark:bg-amber-400/15 dark:hover:bg-amber-400/25 dark:border-amber-400/60 font-semibold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 cursor-pointer shadow-sm"
                 >
-                  <Store className="h-5 w-5" />
-                  Reserve & Pick
+                  <Store className="h-5 w-5 text-brand-maroon dark:!text-amber-300 shrink-0" />
+                  <span className="text-brand-maroon dark:!text-amber-300 font-semibold tracking-wide">
+                    Reserve & Pick
+                  </span>
                 </button>
               </div>
             </div>

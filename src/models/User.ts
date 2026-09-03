@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 
-const addressSchema = new mongoose.Schema(
+const addressSchema = new Schema(
   {
     fullName: { type: String, default: "" },
     phone: { type: String, default: "" },
@@ -17,13 +17,14 @@ const addressSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true },
+    phone: { type: String },
     firebaseUid: { type: String, required: true, unique: true },
     role: { type: String, default: "customer" },
-    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    wishlist: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     addresses: [addressSchema],
   },
   {
@@ -31,5 +32,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User: Model<any> =
+  mongoose.models.User || mongoose.model("User", userSchema);
+
 export default User;

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -7,588 +8,566 @@ import {
   ArrowRight,
   ChevronLeft,
   CheckCircle2,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
 } from "lucide-react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  ConfirmationResult,
+  updateProfile,
   sendEmailVerification,
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-type AuthStep =
-  | "welcome"
-  | "signin"
-  | "signup"
-  | "forgot-password"
-  | "phone-verify"
-  | "unverified";
+type ModalMode = "signin" | "signup" | "forgot-password" | "unverified";
 
 export default function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, firebaseUser } = useAuth();
 
-  const [step, setStep] = useState<AuthStep>("welcome");
-  const [inputVal, setInputVal] = useState("");
+  const [mode, setMode] = useState<ModalMode>("signin");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-
-  const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmationResult | null>(null);
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Close modal automatically if authenticated and email is verified
   useEffect(() => {
     if (firebaseUser && isAuthModalOpen) {
       const isPasswordUser = firebaseUser.providerData.some(
-        (p) => p.providerId === "password",
+        (p) => p.providerId === "password"
       );
-      const isUnverifiedPasswordUser =
-        isPasswordUser && !firebaseUser.emailVerified;
+      const isUnverified = isPasswordUser && !firebaseUser.emailVerified;
 
-      if (!isUnverifiedPasswordUser) {
+      if (!isUnverified) {
         handleClose();
       }
     }
   }, [firebaseUser, isAuthModalOpen]);
 
-  useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined" && window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-    };
-  }, []);
+  const resetFormState = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setName("");
+    setError("");
+    setMessage("");
+  };
 
   const handleClose = () => {
     closeAuthModal();
-    // Clear recaptcha so it doesn't break on reopening
-    if (typeof window !== "undefined" && window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
     setTimeout(() => {
-      setStep("welcome");
-      setInputVal("");
-      setPassword("");
-      setName("");
-      setOtp("");
-      setConfirmationResult(null);
-      setError("");
-      setMessage("");
-    }, 300);
+      setMode("signin");
+      resetFormState();
+    }, 250);
   };
 
-  const setupRecaptcha = () => {
-    if (typeof window === "undefined") return;
-
-    // If a verifier exists but the container is empty/stale, clear it to prevent the 400 error
-    if (
-      window.recaptchaVerifier &&
-      !document.getElementById("recaptcha-container")?.innerHTML
-    ) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
-
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {
-            // Solved successfully
-          },
-          "expired-callback": () => {
-            if (window.recaptchaVerifier) {
-              window.recaptchaVerifier.clear();
-              window.recaptchaVerifier = null;
-            }
-          },
-        },
-      );
-    }
+  const validateEmail = (val: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(val.trim());
   };
 
-  const clearRecaptchaOnError = () => {
-    if (typeof window !== "undefined" && window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
-  };
-
-  const handleSignInSubmit = async (e: React.FormEvent) => {
+  // Sign In with Firebase Email & Password
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setMessage("");
-    if (!inputVal) return;
-    setLoading(true);
 
-    const isEmail = inputVal.includes("@");
-
-    try {
-      if (isEmail) {
-        if (!password) {
-          setError("Password required");
-          setLoading(false);
-          return;
-        }
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          inputVal,
-          password,
-        );
-        if (!userCredential.user.emailVerified) {
-          setStep("unverified");
-        }
-      } else {
-        setupRecaptcha();
-        const formattedPhone = inputVal.startsWith("+")
-          ? inputVal
-          : `+91${inputVal}`;
-        const confResult = await signInWithPhoneNumber(
-          auth,
-          formattedPhone,
-          window.recaptchaVerifier,
-        );
-        setConfirmationResult(confResult);
-        setStep("phone-verify");
-        setMessage(`OTP sent to ${formattedPhone}`);
-      }
-    } catch (err: any) {
-      setError(err.message || "Invalid credentials. Please try again.");
-      clearRecaptchaOnError();
-    } finally {
-      setLoading(false);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !validateEmail(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      return;
     }
-  };
 
-  const handleSignUpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setMessage("");
-    if (!inputVal) return;
-    setLoading(true);
-
-    const isEmail = inputVal.includes("@");
-
-    try {
-      if (isEmail) {
-        if (!password) {
-          setError("Password required");
-          setLoading(false);
-          return;
-        }
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          inputVal,
-          password,
-        );
-
-        const API_BASE =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const idToken = await userCredential.user.getIdToken();
-        await fetch(`${API_BASE}/api/users/sync`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({ name }),
-        }).catch(console.error);
-
-        await sendEmailVerification(userCredential.user);
-        setStep("unverified");
-      } else {
-        setupRecaptcha();
-        const formattedPhone = inputVal.startsWith("+")
-          ? inputVal
-          : `+91${inputVal}`;
-        const confResult = await signInWithPhoneNumber(
-          auth,
-          formattedPhone,
-          window.recaptchaVerifier,
-        );
-        setConfirmationResult(confResult);
-        setStep("phone-verify");
-        setMessage(`OTP sent to ${formattedPhone}`);
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to create account.");
-      clearRecaptchaOnError();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setMessage("");
-    if (!inputVal) return;
-
-    if (!inputVal.includes("@")) {
-      setError(
-        "Please enter your email to reset your password. Phone numbers use OTP and don't require passwords.",
-      );
+    if (!password) {
+      setError("Password is required.");
       return;
     }
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, inputVal);
-      setMessage("A password reset link has been sent to your email.");
-    } catch (err: any) {
-      setError(err.message || "Failed to send reset link.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
+      );
 
-  const handlePhoneVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!confirmationResult) return;
-    setError("");
-    setLoading(true);
-    try {
-      const result = await confirmationResult.confirm(otp);
-
-      if (name) {
-        const idToken = await result.user.getIdToken();
-        const API_BASE =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        await fetch(`${API_BASE}/api/users/sync`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({ name }),
-        }).catch((e) => console.error(e));
+      if (!userCredential.user.emailVerified) {
+        setMode("unverified");
+      } else {
+        handleClose();
       }
     } catch (err: any) {
-      setError("Invalid OTP.");
+      const errorCode = err.code || "";
+      if (
+        errorCode === "auth/wrong-password" ||
+        errorCode === "auth/invalid-credential" ||
+        errorCode === "auth/user-not-found"
+      ) {
+        setError("Invalid email or password. Please try again.");
+      } else if (errorCode === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please reset your password or try again later.");
+      } else {
+        setError(err.message || "Failed to sign in. Please verify your credentials.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const resetFormState = () => {
-    setInputVal("");
-    setPassword("");
-    setName("");
-    setOtp("");
+  // Create Account with Firebase Email & Password
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
     setMessage("");
-    setConfirmationResult(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
+
+    if (!cleanName) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    if (!cleanEmail || !validateEmail(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match. Please re-enter.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
+      );
+
+      // Update displayName in Firebase Auth profile
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: cleanName,
+        });
+
+        // Sync user to MongoDB backend
+        try {
+          const API_BASE =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+          const idToken = await userCredential.user.getIdToken();
+          await fetch(`${API_BASE}/api/users/sync`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ name: cleanName }),
+          });
+        } catch (syncErr) {
+          console.error("Backend sync failed:", syncErr);
+        }
+
+        // Send Email Verification
+        await sendEmailVerification(userCredential.user);
+        setMode("unverified");
+      }
+    } catch (err: any) {
+      const errorCode = err.code || "";
+      if (errorCode === "auth/email-already-in-use") {
+        setError("An account already exists with this email address. Please Sign In.");
+      } else if (errorCode === "auth/weak-password") {
+        setError("Password is too weak. Please use at least 6 characters.");
+      } else {
+        setError(err.message || "Failed to create account. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Send Password Reset Link
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !validateEmail(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, cleanEmail);
+      setMessage(`A password reset link has been sent to ${cleanEmail}. Please check your inbox.`);
+    } catch (err: any) {
+      const errorCode = err.code || "";
+      if (errorCode === "auth/user-not-found") {
+        setError("No account found with this email address.");
+      } else {
+        setError(err.message || "Failed to send password reset email.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isAuthModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
       <div
-        className="glass-panel w-full max-w-md rounded-xl shadow-2xl overflow-hidden relative"
+        className="bg-white dark:bg-[#1a1512] border border-gray-100 dark:border-[#32251d] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden relative transition-all"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Close Button */}
         <button
+          type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition-colors z-10"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors z-10 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+          aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {step !== "welcome" && step !== "unverified" && (
+        {/* Back Button (For forgot password mode) */}
+        {mode === "forgot-password" && (
           <button
+            type="button"
             onClick={() => {
-              setStep("welcome");
-              resetFormState();
+              setMode("signin");
+              setError("");
+              setMessage("");
             }}
-            className="absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors flex items-center text-sm z-10"
+            className="absolute top-4 left-4 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors flex items-center text-xs font-medium z-10 py-1.5 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" /> Back
+            <ChevronLeft className="w-4 h-4 mr-0.5" /> Back to Sign In
           </button>
         )}
 
-        <div className="p-8 pt-12">
-          {/* Persistently kept in DOM to prevent reCAPTCHA element removed errors */}
-          <div id="recaptcha-container" className="flex justify-center"></div>
-
-          {step === "welcome" && (
-            <>
-              <h2 className="text-2xl font-serif text-brand-maroon text-center mb-8 tracking-wide">
-                Welcome to Jewel Palace
-              </h2>
-              <div className="space-y-4">
-                <button
-                  onClick={() => {
-                    setStep("signin");
-                    resetFormState();
-                  }}
-                  className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 shadow-md flex justify-center items-center group cursor-pointer"
-                >
-                  Sign In{" "}
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button
-                  onClick={() => {
-                    setStep("signup");
-                    resetFormState();
-                  }}
-                  className="w-full border border-brand-maroon text-brand-maroon hover:bg-brand-maroon/5 font-medium py-3 rounded transition-all duration-300 cursor-pointer"
-                >
-                  Sign Up
-                </button>
-              </div>
-            </>
-          )}
-
-          {step !== "welcome" && (
-            <h2 className="text-2xl font-serif text-brand-maroon text-center mb-6 tracking-wide">
-              {step === "signin" && "Sign In"}
-              {step === "signup" && "Create Account"}
-              {step === "forgot-password" && "Reset Password"}
-              {step === "phone-verify" && "Verify Phone Number"}
-              {step === "unverified" && "Check Your Email"}
+        <div className="p-7 md:p-9 pt-12">
+          {/* Header Title & Branding */}
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-serif font-bold text-gray-900 dark:text-[#f5f3f0] tracking-wide">
+              {mode === "forgot-password"
+                ? "Reset Password"
+                : mode === "unverified"
+                ? "Verify Email"
+                : "Jewel Palace"}
             </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {mode === "signin" && "Sign in to access your orders and wishlist"}
+              {mode === "signup" && "Create your account for a seamless shopping experience"}
+              {mode === "forgot-password" && "Enter your email to receive a password recovery link"}
+              {mode === "unverified" && "Please verify your email address to continue"}
+            </p>
+          </div>
+
+          {/* Mode Switcher Tabs (Sign In vs Sign Up) */}
+          {(mode === "signin" || mode === "signup") && (
+            <div className="flex border-b border-gray-100 dark:border-white/5 mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setError("");
+                  setMessage("");
+                }}
+                className={`flex-1 pb-3 text-sm font-semibold transition-all text-center cursor-pointer relative ${
+                  mode === "signin"
+                    ? "text-brand-maroon dark:text-brand-gold"
+                    : "text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                Sign In
+                {mode === "signin" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-maroon dark:bg-brand-gold rounded-full" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signup");
+                  setError("");
+                  setMessage("");
+                }}
+                className={`flex-1 pb-3 text-sm font-semibold transition-all text-center cursor-pointer relative ${
+                  mode === "signup"
+                    ? "text-brand-maroon dark:text-brand-gold"
+                    : "text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                Create Account
+                {mode === "signup" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-maroon dark:bg-brand-gold rounded-full" />
+                )}
+              </button>
+            </div>
           )}
 
+          {/* Error Notice */}
           {error && (
-            <div className="mb-5 text-sm font-medium text-red-600 bg-red-50/50 border border-red-100 p-3 rounded text-center break-words">
-              {error}
+            <div className="mb-5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex items-start gap-2 animate-fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+              <span className="flex-1 leading-relaxed">{error}</span>
             </div>
           )}
 
+          {/* Success Message Notice */}
           {message && !error && (
-            <div className="mb-5 text-sm font-medium text-green-600 bg-green-50/50 border border-green-100 p-3 rounded text-center">
-              {message}
+            <div className="mb-5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 p-3 rounded-xl flex items-start gap-2 animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
+              <span className="flex-1 leading-relaxed">{message}</span>
             </div>
           )}
 
-          {step === "signin" && (
-            <form onSubmit={handleSignInSubmit} className="space-y-4">
+          {/* MODE: SIGN IN */}
+          {mode === "signin" && (
+            <form onSubmit={handleSignIn} className="space-y-4" noValidate>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
-                  Email or Phone Number
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
+                  Email Address
                 </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  placeholder="name@example.com or 9876543210"
-                />
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                  />
+                </div>
               </div>
 
-              {(!inputVal || inputVal.includes("@")) && (
-                <div>
-                  <div className="flex justify-between mb-1 items-end">
-                    <label className="block text-xs uppercase tracking-wider text-gray-500 font-medium">
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep("forgot-password");
-                        setError("");
-                        setMessage("");
-                      }}
-                      className="text-xs text-brand-maroon hover:underline cursor-pointer"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot-password");
+                      setError("");
+                      setMessage("");
+                    }}
+                    className="text-xs text-brand-maroon dark:text-brand-gold hover:underline cursor-pointer font-medium"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
                     type="password"
-                    required={inputVal.includes("@")}
-                    className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
+                    required
+                    autoComplete="current-password"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                   />
                 </div>
-              )}
+              </div>
 
               <button
                 type="submit"
-                disabled={loading || !inputVal.trim()}
-                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center group cursor-pointer"
+                disabled={loading}
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 flex justify-center items-center gap-2 cursor-pointer mt-2"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Signing In...</span>
+                  </>
                 ) : (
                   <>
-                    {!inputVal || inputVal.includes("@")
-                      ? "Sign In"
-                      : "Send OTP"}{" "}
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <span>Sign In</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
           )}
 
-          {step === "signup" && (
-            <form onSubmit={handleSignUpSubmit} className="space-y-4">
+          {/* MODE: SIGN UP (CREATE ACCOUNT) */}
+          {mode === "signup" && (
+            <form onSubmit={handleSignUp} className="space-y-3.5" noValidate>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
-                  Email or Phone Number
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  placeholder="name@example.com or 9876543210"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1 font-medium">
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
                   Full Name
                 </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                />
-              </div>
-
-              {(!inputVal || inputVal.includes("@")) && (
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1 font-medium">
-                    Password
-                  </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
-                    type="password"
-                    required={inputVal.includes("@")}
-                    minLength={6}
-                    className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="•••••••• (Min 6 chars)"
+                    type="text"
+                    required
+                    autoFocus
+                    autoComplete="name"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your Full Name"
                   />
                 </div>
-              )}
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
+                  Password (min 6 characters)
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
 
               <button
                 type="submit"
-                disabled={loading || !inputVal.trim() || !name.trim()}
-                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center group cursor-pointer"
+                disabled={loading}
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 flex justify-center items-center gap-2 cursor-pointer mt-2"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Creating Account...</span>
+                  </>
                 ) : (
                   <>
-                    {!inputVal || inputVal.includes("@")
-                      ? "Create Account"
-                      : "Send OTP"}{" "}
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <span>Create Account</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
           )}
 
-          {step === "forgot-password" && (
-            <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
-              <div className="text-sm text-gray-600 mb-4 text-center">
-                Enter your email address to receive a password reset link.
-              </div>
+          {/* MODE: FORGOT PASSWORD */}
+          {mode === "forgot-password" && (
+            <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
+                <label className="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 font-medium">
                   Email Address
                 </label>
-                <input
-                  type="email"
-                  required
-                  autoFocus
-                  className="w-full border border-gray-200 rounded px-4 py-3 text-sm focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none transition-all placeholder:text-gray-400"
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  placeholder="name@example.com"
-                />
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    className="w-full bg-gray-50 dark:bg-[#261b15] border border-gray-200 dark:border-[#38281f] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-[#f5f3f0] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-brand-maroon/20 dark:focus:ring-brand-gold/20 focus:border-brand-maroon dark:focus:border-brand-gold outline-none transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={loading || !inputVal.trim()}
-                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center cursor-pointer"
+                disabled={loading}
+                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3.5 rounded-xl shadow-md transition-all duration-200 disabled:opacity-60 flex justify-center items-center gap-2 cursor-pointer"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending Reset Link...</span>
+                  </>
                 ) : (
-                  "Send Reset Link"
+                  "Send Password Reset Link"
                 )}
               </button>
             </form>
           )}
 
-          {step === "phone-verify" && (
-            <form onSubmit={handlePhoneVerifyOtp} className="space-y-4">
-              <div className="text-sm text-gray-600 mb-2 text-center">
-                OTP sent to{" "}
-                <span className="font-semibold text-gray-900">{inputVal}</span>
+          {/* MODE: UNVERIFIED EMAIL NOTICE */}
+          {mode === "unverified" && (
+            <div className="flex flex-col items-center text-center space-y-4 py-3 animate-fade-in">
+              <div className="w-14 h-14 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center border border-green-200 dark:border-green-900/50">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-center text-gray-500 mb-2 font-medium">
-                  Enter 6-digit OTP
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  className="w-full border border-gray-200 rounded px-4 py-3 text-lg focus:ring-1 focus:ring-brand-maroon focus:border-brand-maroon outline-none text-center tracking-[0.5em] font-medium transition-all"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  maxLength={6}
-                  placeholder="------"
-                />
+                <h3 className="text-base font-semibold text-gray-900 dark:text-[#f5f3f0]">
+                  Verification Link Sent
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+                  We have sent a verification link to{" "}
+                  <strong className="text-gray-900 dark:text-white">{email}</strong>.
+                  Please check your inbox (and spam folder) and verify your email to log in.
+                </p>
               </div>
               <button
-                type="submit"
-                disabled={loading || otp.length !== 6}
-                className="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-medium py-3 rounded transition-all duration-300 disabled:opacity-70 flex justify-center items-center mt-4"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  "Verify & Continue"
-                )}
-              </button>
-            </form>
-          )}
-
-          {step === "unverified" && (
-            <div className="flex flex-col items-center text-center space-y-4 py-4">
-              <CheckCircle2 className="w-16 h-16 text-green-500 mb-2" />
-              <p className="text-gray-600">
-                A verification link has been sent to <strong>{inputVal}</strong>
-                .
-              </p>
-              <p className="text-sm text-gray-500">
-                Please check your inbox (and spam folder) to verify your
-                account. You will not be able to log in until it is verified.
-              </p>
-              <button
+                type="button"
                 onClick={handleClose}
-                className="w-full border border-gray-200 hover:bg-gray-50 text-gray-800 font-medium py-3 rounded transition-all duration-300 mt-4 cursor-pointer"
+                className="w-full border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-[#f5f3f0] font-medium py-3 rounded-xl transition-all text-sm cursor-pointer mt-2"
               >
-                Close
+                Got it, Close
               </button>
             </div>
           )}
