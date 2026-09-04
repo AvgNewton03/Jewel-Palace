@@ -62,7 +62,8 @@ export default function AdminLayout({
       setIsAuthorized(false);
       // Redirect unauthorized users to main site
       if (typeof window !== "undefined") {
-        window.location.href = "https://jewelpalacemumbai.com/?error=access_denied";
+        const isDev = window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1");
+        window.location.href = isDev ? "http://localhost:3000/?error=access_denied" : "https://jewelpalacemumbai.com/?error=access_denied";
       }
     }
   }, [pathname, router, user, isLoading, isSubdomainVerified]);
